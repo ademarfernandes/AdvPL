@@ -36,12 +36,11 @@
 ±±ÀÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
-User Function ImpEsp( lTerminal , cFilTerminal , cMatTerminal , cPerAponta, lPortal, aRetPortal, lMeuRH, cFileName )
+User Function ImpEsp( lTerminal , cFilTerminal , cMatTerminal , cPerAponta, lPortal, aRetPortal )
 
 	Local aArea		 := GetArea()
 	Local aOrdem     := {STR0004 , STR0005 , STR0006 , STR0007, STR0038, STR0060, STR0061  } // 'Matricula'###'Centro de Custo'###'Nome'###'Turno'###'C.Custo + Nome'###'Departamento'###'Departamento + Nome'
 	Local cHtml		 := ""
-	Local cFile		 := ""
 	Local cAviso	
 	Local aFilesOpen := {"SP5", "SPN", "SP8", "SPG","SPB","SPL","SPC", "SPH", "SPF"}
 	Local bCloseFiles:= {|cFiles| If( Select(cFiles) > 0, (cFiles)->( DbCloseArea() ), NIL) }
@@ -52,7 +51,6 @@ User Function ImpEsp( lTerminal , cFilTerminal , cMatTerminal , cPerAponta, lPor
 	Local cDestino	 := fwGetProfString(cSession,"DEFAULT","c:\",.T.)
 	Local nFlags   	 := PD_ISTOTVSPRINTER + PD_DISABLEORIENTATION
 	Local aMargProf	 := {}
-	Local lNoWeb	 := .T.
 		
 	/*
 	ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -86,7 +84,6 @@ User Function ImpEsp( lTerminal , cFilTerminal , cMatTerminal , cPerAponta, lPor
 	Private dPerFim  := Ctod("//")
 	Private cMenPad1 := Space(30)
 	Private cMenPad2 := Space(19)
-	Private cLocal	 := ""
 	Private cFilSPA	 := xFilial("SPA", SRA->RA_FILIAL)
 	Private nOrdem   := 1
 	Private aInfo    := {}
@@ -109,10 +106,8 @@ User Function ImpEsp( lTerminal , cFilTerminal , cMatTerminal , cPerAponta, lPor
 	Private lImpMarc := .T.
 	Private lCodeBar := .F.
 	Private lBigLine := .T.
-	Private nTamRAMAT := TamSx3("RA_MAT")[1]
-	
+
 	DEFAULT lTerminal := .F.
-	DEFAULT lMeuRH    := .F.
 
 	#DEFINE Imp_Spool      	2
 	#DEFINE ALIGN_H_LEFT   	0
@@ -128,7 +123,6 @@ User Function ImpEsp( lTerminal , cFilTerminal , cMatTerminal , cPerAponta, lPor
 	#DEFINE oFont06 		TFont():New( "Verdana", 06, 06, , .T., , , , .T., .F. )//CodeBar
 
 	lPortal   := IF( lPortal == NIL , .F. , lPortal )
-	lNoWeb    := !lTerminal .And. !lMeuRH
 
 	/*
 	ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -156,7 +150,7 @@ User Function ImpEsp( lTerminal , cFilTerminal , cMatTerminal , cPerAponta, lPor
 	ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 	³ Envia controle para a funcao SETPRINT                        ³
 	ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ*/
-	If !( lTerminal .And. lMeuRH )
+	If !( lTerminal )
 		aDevice := {}
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³Define os Tipos de Impressao validos ³
@@ -230,13 +224,6 @@ User Function ImpEsp( lTerminal , cFilTerminal , cMatTerminal , cPerAponta, lPor
 			oPrinter:cPathPDF := oSetup:aOptions[PD_VALUETYPE]
 			
 		EndIf
-	ElseIf lMeuRH
-		aMargRel := {10,10,10,10}
-		cFile    := cFileName
-		cLocal	 := GetSrvProfString ("STARTPATH","")
-		oPrinter := FWMSPrinter():New( cFile+".rel", IMP_PDF, .F., cLocal, .T., , , , .T., , .F., )
-		oPrinter:SetResolution( 75 )
-		oPrinter:SetLandscape()	
 	EndIf
 
 	/*
@@ -249,38 +236,40 @@ User Function ImpEsp( lTerminal , cFilTerminal , cMatTerminal , cPerAponta, lPor
 	ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 	³ Carregando variaveis MV_PAR?? para Variaveis do Sistema.     ³
 	ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ*/
-	FilialDe	:= IF( lNoWeb , MV_PAR01, cFilTerminal )			//Filial  De
-	FilialAte	:= IF( lNoWeb , MV_PAR02, cFilTerminal )			//Filial  Ate
-	CcDe		:= IF( lNoWeb , MV_PAR03, SRA->RA_CC   )			//Centro de Custo De
-	CcAte		:= IF( lNoWeb , MV_PAR04, SRA->RA_CC   )			//Centro de Custo Ate
-	TurDe		:= IF( lNoWeb , MV_PAR05, SRA->RA_TNOTRAB)			//Turno De
-	TurAte		:= IF( lNoWeb , MV_PAR06, SRA->RA_TNOTRAB)			//Turno Ate
-	MatDe		:= IF( lNoWeb , MV_PAR07, cMatTerminal)				//Matricula De
-	MatAte		:= IF( lNoWeb , MV_PAR08, cMatTerminal)				//Matricula Ate
-	NomDe		:= IF( lNoWeb , MV_PAR09, SRA->RA_NOME)				//Nome De
-	NomAte		:= IF( lNoWeb , MV_PAR10, SRA->RA_NOME)				//Nome Ate
-	cSit		:= IF( lNoWeb , MV_PAR11, fSituacao( NIL , .F. ))	//Situacao
-	cCat		:= IF( lNoWeb , MV_PAR12, fCategoria( NIL , .F. ))	//Categoria
-	nImpHrs		:= IF( lNoWeb , MV_PAR13, 3 )						//Imprimir horas Calculadas/Inform/Ambas/NA
-	nImpAut		:= IF( lNoWeb , MV_PAR14, 1 )						//Demonstrar horas Autoriz/Nao Autorizadas
-	nCopias		:= IF( lNoWeb , If(MV_PAR15>0,MV_PAR15,1),1)		//N£mero de C¢pias
-	lSemMarc	:= IF( lNoWeb , (MV_PAR16==1)	, .F. )				//Imprime para Funcion rios sem Marca‡oes
-	cMenPad1	:= IF( lNoWeb , MV_PAR17, "" )						//Mensagem padr„o anterior a Assinatura
-	cMenPad2	:= IF( lNoWeb , MV_PAR18, "" )						//Mens. padr„o anterior a Assinatura(Cont.)
-	dPerIni     := IF( lNoWeb , MV_PAR19,Stod( Subst( cPerAponta, 1, 8 ) ))	//Data Contendo o Inicio do Periodo de Apontamento
-	dPerFim     := IF( lNoWeb , MV_PAR20,Stod( Subst( cPerAponta, 9, 8 ) ))	//Data Contendo o Fim  do Periodo de Apontamento
-	lSexagenal	:= IF( lNoWeb , (MV_PAR21==1), .T.  )				//Horas em  (Sexagenal/Centesimal)
-	lImpRes		:= IF( lNoWeb , (MV_PAR22==1), .F.	)				//Imprime eventos a partir do resultado ?
-	lImpTroca   := IF( lNoWeb , (MV_PAR23==1), .F.	)				//Imprime Descricao Troca de Turnos ou o Atual 
-	lImpExcecao := IF( lNoWeb , (MV_PAR24==1), .F.	)				//Imprime Descricao da Excecao no Lugar da do Afastamento  
-	DeptoDe		:= IF( lNoWeb , MV_PAR25, SRA->RA_DEPTO   )			//Departamento De
-	DeptoAte	:= IF( lNoWeb , MV_PAR26, SRA->RA_DEPTO   )			//Departamento Ate
-	lImpMarc 	:= IF( lNoWeb , MV_PAR27==1, .T.   )		 		//Imprime marcações? .T.
-	lCodeBar 	:= IF( lNoWeb , MV_PAR28==1, .F.   ) 				//Imprime código de barras? .F.
-	lBigLine 	:= IF( lNoWeb , MV_PAR29==1, .T.   ) 				//Destaca linhas? .T.
-	lImpBh 		:= IF( lNoWeb , MV_PAR30==1, If( lMeuRH,.T.,.F. ) )	//Imprime banco de horas
-	RegDe		:= IF( lNoWeb , MV_PAR31, SRA->RA_REGRA)			//Regra De
-	RegAte		:= IF( lNoWeb , MV_PAR32, SRA->RA_REGRA)			//Regra Ate
+	FilialDe	:= IF( !lTerminal , MV_PAR01, cFilTerminal )			//Filial  De
+	FilialAte	:= IF( !lTerminal , MV_PAR02, cFilTerminal )			//Filial  Ate
+	CcDe		:= IF( !lTerminal , MV_PAR03, SRA->RA_CC   )			//Centro de Custo De
+	CcAte		:= IF( !lTerminal , MV_PAR04, SRA->RA_CC   )			//Centro de Custo Ate
+	TurDe		:= IF( !lTerminal , MV_PAR05, SRA->RA_TNOTRAB)			//Turno De
+	TurAte		:= IF( !lTerminal , MV_PAR06, SRA->RA_TNOTRAB)			//Turno Ate
+	MatDe		:= IF( !lTerminal , MV_PAR07, cMatTerminal)				//Matricula De
+	MatAte		:= IF( !lTerminal , MV_PAR08, cMatTerminal)				//Matricula Ate
+	NomDe		:= IF( !lTerminal , MV_PAR09, SRA->RA_NOME)				//Nome De
+	NomAte		:= IF( !lTerminal , MV_PAR10, SRA->RA_NOME)				//Nome Ate
+	cSit		:= IF( !lTerminal , MV_PAR11, fSituacao( NIL , .F. ))	//Situacao
+	cCat		:= IF( !lTerminal , MV_PAR12, fCategoria( NIL , .F. ))	//Categoria
+	nImpHrs		:= IF( !lTerminal , MV_PAR13, 3 )						//Imprimir horas Calculadas/Inform/Ambas/NA
+	nImpAut		:= IF( !lTerminal , MV_PAR14, 1 )						//Demonstrar horas Autoriz/Nao Autorizadas
+	nCopias		:= IF( !lTerminal , If(MV_PAR15>0,MV_PAR15,1),1)		//N£mero de C¢pias
+	lSemMarc	:= IF( !lTerminal , (MV_PAR16==1)	, .F. )				//Imprime para Funcion rios sem Marca‡oes
+	cMenPad1	:= IF( !lTerminal , MV_PAR17, "" )						//Mensagem padr„o anterior a Assinatura
+	cMenPad2	:= IF( !lTerminal , MV_PAR18, "" )						//Mens. padr„o anterior a Assinatura(Cont.)
+	dPerIni     := IF( !lTerminal ,;
+						MV_PAR19,Stod( Subst( cPerAponta , 1 , 8 ) ))	//Data Contendo o Inicio do Periodo de Apontamento
+	dPerFim     := IF( !lTerminal ,;
+						MV_PAR20,Stod( Subst( cPerAponta , 9 , 8 ) ))	//Data Contendo o Fim  do Periodo de Apontamento
+	lSexagenal	:= IF( !lTerminal , (MV_PAR21==1), .T.  )				//Horas em  (Sexagenal/Centesimal)
+	lImpRes		:= IF( !lTerminal , (MV_PAR22==1), .F.	)				//Imprime eventos a partir do resultado ?
+	lImpTroca   := IF( !lTerminal , (MV_PAR23==1), .F.	)				//Imprime Descricao Troca de Turnos ou o Atual 
+	lImpExcecao := IF( !lTerminal , (MV_PAR24==1), .F.	)				//Imprime Descricao da Excecao no Lugar da do Afastamento  
+	DeptoDe		:= IF( !lTerminal , MV_PAR25, SRA->RA_DEPTO   )			//Departamento De
+	DeptoAte	:= IF( !lTerminal , MV_PAR26, SRA->RA_DEPTO   )			//Departamento Ate
+	lImpMarc 	:= IF( !lTerminal , MV_PAR27==1, .T.   )		 		//Imprime marcações? .T.
+	lCodeBar 	:= IF( !lTerminal , MV_PAR28==1, .F.   ) 				//Imprime código de barras? .F.
+	lBigLine 	:= IF( !lTerminal , MV_PAR29==1, .T.   ) 				//Destaca linhas? .T.
+	lImpBh 		:= IF( !lTerminal , MV_PAR30==1, .F.   ) 				//Imprime banco de horas
+	RegDe		:= IF( !lTerminal , MV_PAR31, SRA->RA_REGRA)			//Regra De
+	RegAte		:= IF( !lTerminal , MV_PAR32, SRA->RA_REGRA)			//Regra Ate
 
 	/*
 	ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -291,11 +280,11 @@ User Function ImpEsp( lTerminal , cFilTerminal , cMatTerminal , cPerAponta, lPor
 
 	Begin Sequence
 
-		If ( lTerminal .Or. lMeuRH )
+		If ( lTerminal )
 			//-- Verifica se foi possivel abrir os arquivos sem exclusividade
 			If Pn090Open(@cHtml, @cAviso)
 				cHtml := ""	
-				cHtml := Pnr010Imp( NIL , lTerminal, lPortal, aRetPortal, oPrinter, lMeuRH, cFileName  )
+				cHtml := Pnr010Imp( NIL , lTerminal, lPortal, aRetPortal  )
 				/*
 				ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 				³ Apos a obtencao da consulta solicitada fecha os arquivos     ³
@@ -328,7 +317,7 @@ User Function ImpEsp( lTerminal , cFilTerminal , cMatTerminal , cPerAponta, lPor
 		
 	End Sequence
 
-	If !(lTerminal .And. lMeuRH)
+	If !lTerminal
 		oPrinter:Preview()
 	EndIf
 
@@ -351,7 +340,7 @@ Return( cHtml )
 ±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
-Static Function Pnr010Imp( lEnd , lTerminal, lPortal, aRetPortal, oPrinter, lMeuRH, cFileName )
+Static Function Pnr010Imp( lEnd , lTerminal, lPortal, aRetPortal, oPrinter )
 
 	Local aAbonosPer	:= {}
 	Local cOrdem		:= ""
@@ -459,7 +448,7 @@ Static Function Pnr010Imp( lEnd , lTerminal, lPortal, aRetPortal, oPrinter, lMeu
 	cWhere += "%"
 
 	//'Matricula'###'Centro de Custo'###'Nome'###'Turno'###'C.Custo + Nome'###'Departamento'###'Departamento + Nome'
-	If ( ( nOrdem == 1 ) .Or. ( lTerminal .Or. lMeuRH ) )
+	If ( ( nOrdem == 1 ) .or. ( lTerminal ) )
 		cOrdem := "%SRA.RA_FILIAL, SRA.RA_MAT%"
 	ElseIf ( nOrdem == 2 )
 		cOrdem := "%SRA.RA_FILIAL, SRA.RA_CC%"
@@ -489,7 +478,7 @@ Static Function Pnr010Imp( lEnd , lTerminal, lPortal, aRetPortal, oPrinter, lMeu
 	ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 	³Inicializa R‚gua de Impress„o								   ³
 	ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ*/
-	If !( lTerminal .And. lMeuRH )
+	If !( lTerminal )
 		BeginSql Alias cAliasQTD
 		
 			SELECT Count(*) AS QTDREG
@@ -523,7 +512,7 @@ Static Function Pnr010Imp( lEnd , lTerminal, lPortal, aRetPortal, oPrinter, lMeu
 		ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		³So Faz Validacoes Quando nao for Terminal					   ³
 		ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ*/
-		If !( lTerminal .And. lMeuRH ) 
+		If !( lTerminal ) 
 		
 			/*
 			ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -628,7 +617,7 @@ Static Function Pnr010Imp( lEnd , lTerminal, lPortal, aRetPortal, oPrinter, lMeu
 		ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		³Retorna Periodos de Apontamentos Selecionados				  ³
 		ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ*/
-		If ( lTerminal .Or. lMeuRH )
+		If ( lTerminal )
 			dPerIni	:= dIniCale
 			dPerFim := dFimCale
 		EndIf
@@ -717,7 +706,7 @@ Static Function Pnr010Imp( lEnd , lTerminal, lPortal, aRetPortal, oPrinter, lMeu
 			aFuncFunc  := {SPACE(1), SPACE(1), SPACE(1), SPACE(1), SPACE(1), SPACE(1)}
 			fBuscaCC(dMarcFim, @aFuncFunc[1], @aFuncFunc[2], Nil, .F. , .T.  ) 
 			aFuncFunc[2]:= Substr(aFuncFunc[2], 1, 25)
-			fBuscaFunc(dMarcFim, @aFuncFunc[3], @aFuncFunc[4])
+			fBuscaFunc(dMarcFim, @aFuncFunc[3], @aFuncFunc[4],20, @aFuncFunc[5], @aFuncFunc[6],25, .F. )
 			If Empty(aFuncFunc[6])
 				aFuncFunc[6] := DescCateg(SRA->RA_CATFUNC , 25)
 			EndIf
@@ -781,7 +770,7 @@ Static Function Pnr010Imp( lEnd , lTerminal, lPortal, aRetPortal, oPrinter, lMeu
 			/*Carrega o Array a ser utilizado na Impressao.
 			aPeriodos[nX,3] --> Inicio do Periodo para considerar as marcacoes e tabela
 			aPeriodos[nX,4] --> Fim do Periodo para considerar as marcacoes e tabela */
-			If ( !fMontaAimp( aTabCalend, aMarcacoes, @aImp,dMarcIni,dMarcFim, lTerminal, lImpAcum, lMeuRH) .and. !( lSemMarc ) )
+			If ( !fMontaAimp( aTabCalend, aMarcacoes, @aImp,dMarcIni,dMarcFim, lTerminal, lImpAcum) .and. !( lSemMarc ) )
 				Loop
 			EndIf
 
@@ -790,10 +779,10 @@ Static Function Pnr010Imp( lEnd , lTerminal, lPortal, aRetPortal, oPrinter, lMeu
 
 			//Imprime o Espelho para um Funcionario.
 			For nCount := 1 To nCopias
-				If !lTerminal .Or. lMeuRH
+				If !( lTerminal )
 					oPrinter:StartPage()
 					If lCodeBar
-						cCodeBar := cEmpAnt + SRA->RA_FILIAL + PADL(alltrim(SRA->RA_MAT),nTamRAMAT,"0") + DtoS(dPerIni) + DtoS(dPerFim) + DtoS(dDataBase) + StrTran(Time(),":","")
+						cCodeBar := cEmpAnt + SRA->RA_FILIAL + SRA->RA_MAT + DtoS(dPerIni) + DtoS(dPerFim) + DtoS(dDataBase) + StrTran(Time(),":","")
 					EndIf
 					fImpFun( aImp , nColunas, ,oPrinter )
 					If lCodeBar //Grava o código de barras gerado na tabela RS4
@@ -808,13 +797,6 @@ Static Function Pnr010Imp( lEnd , lTerminal, lPortal, aRetPortal, oPrinter, lMeu
 						MsUnLock()
 					EndIf
 					oPrinter:EndPage()
-
-					If lMeuRH
-						cFilePrint := cFileName + ".pdf"
-						oPrinter:cPathPDF := cLocal 
-						oPrinter:lViewPDF := .F.
-						oPrinter:Print()					
-					EndIf
 				Else
 					If lPortal
 						aRetPortal  := aClone(aImp)
@@ -853,7 +835,7 @@ Return( cHtml )
 ±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
-Static Function fImpFun( aImp , nColunas , lTerminal, oPrinter, lMeuRH )
+Static Function fImpFun( aImp , nColunas , lTerminal, oPrinter )
 
 	Local cHtml			:= ""    
 	Local cOcorr		:= ""   
@@ -890,7 +872,7 @@ Static Function fImpFun( aImp , nColunas , lTerminal, oPrinter, lMeuRH )
 	nTamAuxLin	:= 19+(nColunas*6)+50
 	nTamLin    	:= If(nTamAuxLin <= 80,80,If(nTamAuxLin<=132,132,220))
 
-	If ( lTerminal .And. !lMeuRH )
+	If ( lTerminal )
 		/*
 		ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		³ Inicio da Estrutura do Codigo HTML						   ³
@@ -931,7 +913,7 @@ Static Function fImpFun( aImp , nColunas , lTerminal, oPrinter, lMeuRH )
 	//-- Imprime Marcações
 	nLenImp := Len(aImp)
 	For nX := 1 To nLenImp
-		If !( lTerminal .And. lMeuRH )
+		If !( lTerminal )
 			nLin += 12
 			
 			If nLin > nLinTot - 40
@@ -1322,7 +1304,7 @@ Return( cHtml )
 ±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
-Static Function FMontaAimp(aTabCalend, aMarcacoes, aImp,dInicio,dFim, lTerminal, lImpAcum, lMeuRH)
+Static Function FMontaAimp(aTabCalend, aMarcacoes, aImp,dInicio,dFim, lTerminal, lImpAcum)
 
 	Local aDescAbono := {}
 	Local aCodigos	 := {}
@@ -1482,13 +1464,13 @@ Static Function FMontaAimp(aTabCalend, aMarcacoes, aImp,dInicio,dFim, lTerminal,
 		aAdd(aImp[Len(aImp)], aTabCalend[nTab,48])
 
 		//-- Ocorrencia na Data.
-		If (lTerminal .Or. lMeuRH) 
+		If (lTerminal) 
 			aAdd( aImp[Len(aImp)], cOcorr) 
 		EndIf	
 		
 		//-- Abono na Data.
 		If ( nLenDescAb  > 0 )
-			If !( lTerminal .And. lMeuRH )
+			If !( lTerminal)
 				If cOcorr == STR0020  // '** Ausente **'
 					aAdd( aImp[Len(aImp)], cOcorr ) // '** Ausente **'
 				Else
@@ -1514,7 +1496,7 @@ Static Function FMontaAimp(aTabCalend, aMarcacoes, aImp,dInicio,dFim, lTerminal,
 				EndIf
 			Next nX
 		Else
-			If ( lTerminal .Or. lMeuRH ) 
+			If ( lTerminal ) 
 				aAdd( aImp[Len(aImp)], '' )
 			Else
 				If cOcorr == STR0020  // '** Ausente **'
@@ -1538,7 +1520,7 @@ Static Function FMontaAimp(aTabCalend, aMarcacoes, aImp,dInicio,dFim, lTerminal,
 
 	Next nDia
 
-	If lImpMarc .And. (!lTerminal .Or. lMeuRH) //Carrega o array aResult para exibicao das HE, faltas e adc. noturno.
+	If lImpMarc .and. !lTerminal //Carrega o array aResult para exibicao das HE, faltas e adc. noturno.
 		aResult := {}
 		fGetApo(@aResult, dInicio, dFim, lImpAcum)
 	EndIf
@@ -1911,7 +1893,8 @@ If ( lImpRes )
 				dMarcIni		,;
 				dMarcFim		,;
 				bAcessRes		,;
-				cAliasRes		 ;
+				cAliasRes		,;
+				cAutoriza		 ;
 			  )
 	//-- Converte as horas para sexagenal quando impressao for a partir do resultado
 	If ( lSexagenal )	// Sexagenal

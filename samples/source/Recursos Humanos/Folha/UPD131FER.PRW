@@ -20,8 +20,8 @@ If !fCriaSX1()
 EndIf
 
 aAdd(aSays,OemToAnsi( "Este programa tem como objetivo corrigir o roteiro de calculo das " ))
-aAdd(aSays,OemToAnsi( "verbas de 13 salario antecipadas nas férias/Rescisão para o roteiro FOL que"))
-aAdd(aSays,OemToAnsi( " estão no acumulado(SRD) como roteiro 131 "))
+aAdd(aSays,OemToAnsi( "verbas de 13 salario antecipadas nas férias para o roteiro FOL que"))
+aAdd(aSays,OemToAnsi( " estão no acumulado(SRD) "))
 
 aAdd(aButtons, { 5,.T.,{|| Pergunte(cPerg,.T. ) } } )
 aAdd(aButtons, { 1,.T.,{|o| nOpcA := 1,IF(gpconfOK(), FechaBatch(), nOpcA := 0 ) }} )
@@ -53,10 +53,7 @@ Local cWhereQRY := ""
 Local lNovo     := .F.
 Local cRot131	:= fGetCalcRot("5")
 Local cRotFOL	:= fGetRotOrdinar()
-Local cPd131	:= RetValSRV('0022', xFilial("SRA"), "RV_COD",2)
-Local cPdBase	:= "%'" + RetValSRV('0108', xFilial("SRA"), "RV_COD",2) + "','" +RetValSRV('0109', xFilial("SRA"), "RV_COD",2) + "'%"
-Local aRecno	:= {}
-Local nI		:= 1
+Local lTemConv	:= SRD->(COlumnPos("RD_CONVOC"))
 
 Pergunte( cPerg, .F. )
 MakeSqlExpr( cPerg )
@@ -84,66 +81,57 @@ cWhereQRY := "%" + cWhere + "%"
 
 //Processa a query e cria a tabela temporária com os resultados
 BeginSql alias cAliasQry
-	SELECT SRD.RD_FILIAL, SRD.RD_MAT, SRD.RD_PROCES, SRD.RD_ROTEIR, SRD.RD_PERIODO, SRD.RD_SEMANA, SRD.RD_CC, SRD.RD_DATARQ, SRD.RD_DATPGT, SRD.R_E_C_N_O_ AS RECNOSRD
+	SELECT SRD.RD_FILIAL, SRD.RD_MAT, SRD.RD_CC, SRD.RD_DATARQ, SRD.RD_SEMANA, SRD.RD_DATPGT, SRD.R_E_C_N_O_ AS RECNOSRD
     FROM %table:SRD% SRD
+	INNER JOIN %table:SRV% SRV
+    ON	%exp:cJoinRDRV% AND
+        SRV.RV_COD = SRD.RD_PD AND
+        SRV.RV_REF13='S' AND
+        SRV.%notDel%
     WHERE %exp:cWhereQRY% 
 	 		AND SRD.RD_TIPO2 = 'K' 
 	 		AND SRD.RD_ROTEIR = %exp:cRot131%
-	 		AND SRD.RD_PD = %exp:cPd131%
             AND SRD.%notDel%
 EndSql 
 
-While (cAliasQry)->( !EoF() )
-	SRD->(DbSetOrder(5))//RD_FILIAL, RD_MAT, RD_PROCES, RD_ROTEIR, RD_PERIODO, RD_SEMANA, R_E_C_N_O_, D_E_L_E_T_
-   	If SRD->(dbseek((cAliasQry)->RD_FILIAL+(cAliasQry)->RD_MAT+(cAliasQry)->RD_PROCES+(cAliasQry)->RD_ROTEIR+(cAliasQry)->RD_PERIODO+(cAliasQry)->RD_SEMANA))
-   		While SRD->(RD_FILIAL+RD_MAT+RD_PROCES+RD_ROTEIR+RD_PERIODO+RD_SEMANA) == (cAliasQry)->RD_FILIAL+(cAliasQry)->RD_MAT+(cAliasQry)->RD_PROCES+(cAliasQry)->RD_ROTEIR+(cAliasQry)->RD_PERIODO+(cAliasQry)->RD_SEMANA
-	   		lAchou := fTemSRD((cAliasQry)->RECNOSRD,cRotFOL,SRD->RD_PD)
-   			If !lAchou
-   				aadd(aRecno,SRD->(Recno()))
-   				aAdd( aLog[1], "Filial: " + (cAliasQry)->RD_FILIAL + "  -  Matrícula: " + (cAliasQry)->RD_MAT + "  -  Período: " + (cAliasQry)->RD_DATARQ + " - Verba: " +SRD->RD_PD  )
-			EndIf
-   			SRD->(dbSkip())
-   		EndDo
-    EndIf
-    (cAliasQry)->( dbSkip() )
-EndDo
-(cAliasQry)->( dbCloseArea() )
-
-cAliasQry := GetNextAlias()
-//Processa a query e cria a tabela temporária com os resultados
-BeginSql alias cAliasQry
- 	SELECT SRD.R_E_C_N_O_ AS RECNOSRD
-    FROM %table:SRD% SRD
-    INNER JOIN  %table:SRR% SRR ON SRR.RR_FILIAL = SRD.RD_FILIAL AND SRD.RD_MAT = SRR.RR_MAT AND SRD.RD_PERIODO = SRR.RR_PERIODO AND SRD.RD_SEMANA = SRR.RR_SEMANA AND SRR.RR_TIPO3='R' AND SRD.RD_PROCES = SRR.RR_PROCES AND SRR.%notDel% AND SRD.RD_PD = SRR.RR_PD
-    WHERE %exp:cWhereQRY% 
-	 		AND SRD.RD_ROTEIR = %exp:cRot131%
-	 		AND SRD.RD_PD IN (%exp:cPdBase%)
-            AND SRD.%notDel%
-EndSql 
-  
-While (cAliasQry)->( !EoF() )
-	SRD->(dbGoto((cAliasQry)->RECNOSRD))
-	lAchou := fTemSRD((cAliasQry)->RECNOSRD,cRotFOL,SRD->RD_PD)
-	If !lAchou
-		aadd(aRecno,SRD->(Recno()))
-		aAdd( aLog[1], "Filial: " + SRD->RD_FILIAL + "  -  Matrícula: " + SRD->RD_MAT + "  -  Período: " + SRD->RD_DATARQ + " - Verba: " +SRD->RD_PD  )
-	EndIf
-	(cAliasQry)->( dbSkip() )
-EndDo
-(cAliasQry)->( dbCloseArea() ) 
-
-For nI := 1 To Len(aRecno)
- 	SRD->(dbGoto(aRecno[nI]))
-	If SRD->( RecLock("SRD", .F.) )
-		SRD->RD_ROTEIR  := cRotFOL
-        SRD->( MsUnlock() )
-    EndIf
-Next 
-
-If Len(aRecno) == 0
+//Ordena a tabela SRD pela ordem C - RD_FILIAL, RD_MAT, RD_CC, RD_ITEM, RD_CLVL, RD_DATARQ, RD_PD, RD_SEQ, RD_PERIODO, RD_SEMANA, RD_ROTEIR, RD_DTREF, RD_CONVOC, R_E_C_N_O_, D_E_L_E_T_
+If lTemConv
+	SRD->( dbSetOrder(RetOrdem("SRD","RD_FILIAL+RD_MAT+RD_CC+RD_ITEM+RD_CLVL+RD_DATARQ+RD_PD+RD_SEQ+RD_PERIODO+RD_SEMANA+RD_ROTEIR+DTOS(RD_DTREF)+RD_CONVOC")) )
+Else
+	SRD->( dbSetOrder(RetOrdem("SRD","RD_FILIAL+RD_MAT+RD_CC+RD_ITEM+RD_CLVL+RD_DATARQ+RD_PD+RD_SEQ+RD_PERIODO+RD_SEMANA+RD_ROTEIR+DTOS(RD_DTREF)")) )
+EndIf
+If (cAliasQry)->( EoF() )
 	Aviso("Atenção","Não foram encontradas inconsistências no acumulado.",{"OK"})
 EndIf
+While (cAliasQry)->( !EoF() )
+   
+    //Ordena a tabela SRA pela ordem 1 - RA_FILIAL+RA_MAT
+    SRA->( dbSetOrder(1) )
+    //Posiciona na tabela SRA
+    SRA->( dbSeek( (cAliasQry)->RD_FILIAL + (cAliasQry)->RD_MAT ) )
+    
+    SRD->(dbGoto((cAliasQry)->RECNOSRD))
+    
+    //RD_FILIAL, RD_MAT, RD_CC, RD_ITEM, RD_CLVL, RD_DATARQ, RD_PD, RD_SEQ, RD_PERIODO, RD_SEMANA, RD_ROTEIR, RD_DTREF, RD_CONVOC, R_E_C_N_O_, D_E_L_E_T_
+    If lTemConv
+    	lAchou := SRD->(dbSeek( SRD->(RD_FILIAL + RD_MAT + RD_CC + RD_ITEM + RD_CLVL + RD_DATARQ + RD_PD + RD_SEQ + RD_PERIODO + RD_SEMANA + cRotFOL + DTOS(RD_DTREF) + RD_CONVOC) ) )
+    Else
+    	lAchou := SRD->(dbSeek( SRD->(RD_FILIAL + RD_MAT + RD_CC + RD_ITEM + RD_CLVL + RD_DATARQ + RD_PD + RD_SEQ + RD_PERIODO + RD_SEMANA + cRotFOL + DTOS(RD_DTREF)) ) )
+    EndIf
 
+    If !lAchou
+    	SRD->(dbGoto((cAliasQry)->RECNOSRD))
+	    If SRD->( RecLock("SRD", .F.) )
+	    	SRD->RD_ROTEIR  := cRotFOL
+	        aAdd( aLog[1], "Filial: " + (cAliasQry)->RD_FILIAL + "  -  Matrícula: " + (cAliasQry)->RD_MAT + "  -  Período: " + (cAliasQry)->RD_DATARQ + " - Verba: " +SRD->RD_PD  )
+
+	        SRD->( MsUnlock() )
+	    EndIf
+	EndIf
+    (cAliasQry)->( dbSkip() )
+EndDo
+
+(cAliasQry)->( dbCloseArea() )
 
 Return
 
@@ -179,20 +167,3 @@ Else
 	EndIf
 EndIf
 Return lRet
-
-Static Function fTemSRD(nRecno,cRotFOL,cPd)
-Local aArea		:= SRD->(GetArea())
-Local lTemConv	:= SRD->(COlumnPos("RD_CONVOC"))
-Local lAchou	:= .F.
-
-SRD->(dbGoto(nRecno))
-If lTemConv
-	SRD->( dbSetOrder(RetOrdem("SRD","RD_FILIAL+RD_MAT+RD_CC+RD_ITEM+RD_CLVL+RD_DATARQ+RD_PD+RD_SEQ+RD_PERIODO+RD_SEMANA+RD_ROTEIR+DTOS(RD_DTREF)+RD_CONVOC")) )
-	lAchou := SRD->(dbSeek( SRD->(RD_FILIAL + RD_MAT + RD_CC + RD_ITEM + RD_CLVL + RD_DATARQ + cPd + RD_SEQ + RD_PERIODO + RD_SEMANA + cRotFOL + DTOS(RD_DTREF) + RD_CONVOC) ) )
-Else
-	SRD->( dbSetOrder(RetOrdem("SRD","RD_FILIAL+RD_MAT+RD_CC+RD_ITEM+RD_CLVL+RD_DATARQ+RD_PD+RD_SEQ+RD_PERIODO+RD_SEMANA+RD_ROTEIR+DTOS(RD_DTREF)")) )
-	lAchou := SRD->(dbSeek( SRD->(RD_FILIAL + RD_MAT + RD_CC + RD_ITEM + RD_CLVL + RD_DATARQ + cPd + RD_SEQ + RD_PERIODO + RD_SEMANA + cRotFOL + DTOS(RD_DTREF)) ) )
-EndIf
-
-RestArea(aArea)
-Return lAchou

@@ -3,9 +3,6 @@
 
 User Function qiea231() 
 
-Local nI := 0 
-Local nX := 0
-
 SetPrvt("LCONT,CINDINF,LCONSISTE,NFATIQI,NFATIPR,NFATIES")
 SetPrvt("CIE230MES,AFATIQP,CFATAPR,CFATREP,CFATLU,DDTINI")
 SetPrvt("DDTFIM,NMVMESACU,AANOMES,CANOINI,CANOFIM,CMESINI")
@@ -80,7 +77,6 @@ _____________________________________________________________________________
 //       Aprovado, no cadastro de Resultados, o sistema exibira mensagem para
 //       o usuario, orientando-o a gerar novamente o Indice de Qualidade.
 */
-
 
 // Indica se prossegue o programa
 lCont := .T.
@@ -967,9 +963,6 @@ Static Function A231CaAc()
 
 // Calcula o IQI Acumulado
 // Acumula a qtde. de cada Fator (de todos os meses)
-Local nX := 0 
-Local nI := 0 
-
 aLauAc := {}
 For nI := 1 to Len(aFatAcum)
 	nSoma := 0

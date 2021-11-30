@@ -55,7 +55,7 @@ Private aArqs, cCmd,cWhere,cOrder,;
                      {"DTVENC    ","C",10,0},;
                      {"IMPODE    ","C",60,0},;
                      {"MOEDA     ","C",AVSX3("EEC_MOEDA" ,AV_TAMANHO),0},;  // By JPP - 27/09/04 13:26
-                     {"VALORNFS  ","C", LEN(AVSX3("EEC_TOTPED",AV_PICTURE)),0},;  // "N",AVSX3("EEM_VLNF",3),AVSX3("EEM_VLNF",4)},;
+                     {"VALORNFS  ","C", LEN(AVSX3("EEM_VLNF"  ,AV_PICTURE)),0},;  // "N",AVSX3("EEM_VLNF",3),AVSX3("EEM_VLNF",4)},;
                      {"VALORUSS  ","C", LEN(AVSX3("EEC_TOTPED"  ,AV_PICTURE)),0},;  // "N",AVSX3("EEC_TOTPED",3),AVSX3("EEC_TOTPED",4)},;
                      {"VRCAMB    ","C", LEN(AVSX3("EEQ_TX"  ,AV_PICTURE)),0}}   // "N",AVSX3("EEQ_TX",3),AVSX3("EEQ_TX",4)}}            
                      
@@ -305,7 +305,7 @@ Local cPeriodo
 Local cChave  
 Local nValorNfs := 0, nValorUss := 0, nValorCamb := 0
 Local nSomaVlNfs := 0, nSomaVlCamb := 0
-Local cPictNfs := AVSX3("EEC_TOTPED",AV_PICTURE), cPictUss := AVSX3("EEC_TOTPED",AV_PICTURE),;  
+Local cPictNfs :=AVSX3("EEM_VLNF"  ,AV_PICTURE), cPictUss := AVSX3("EEC_TOTPED",AV_PICTURE),;  
       cPictCamb := AVSX3("EEC_TOTPED"  ,AV_PICTURE), cPictTxPTAX := AVSX3("EEQ_TX"  ,AV_PICTURE) 
 Local aSomaMoeda := {}, nInd
 
@@ -398,19 +398,19 @@ Begin Sequence
       #IFDEF TOP
          IF TCSRVTYPE() <> "AS/400"
             If ! EECFlags("FRESEGCOM") // JPP - 27/09/04 16:00 - Se a estrutura de dados da tabela EEQ é antiga. Mantem a leitura original dos dados. 
-               nValorNfs := ROUND(QRY->EEQ_VL * BuscaTaxa(QRY->EEC_MOEDA,CtoD(TransData(QRY->EEC_DTEMBA)),,.f.),2)
+               nValorNfs := QRY->EEQ_VL * BuscaTaxa(QRY->EEC_MOEDA,CtoD(TransData(QRY->EEC_DTEMBA)),,.f.)
                DET->VALORNFS := Transform(nValorNfs,cPictNfs)
             Else // lê os dados com base na tabela EEQ 
-               nValorNfs := ROUND(QRY->EEQ_VL * BuscaTaxa(QRY->EEQ_MOEDA,CtoD(TransData(QRY->EEC_DTEMBA)),,.f.),2)
+               nValorNfs := QRY->EEQ_VL * BuscaTaxa(QRY->EEQ_MOEDA,CtoD(TransData(QRY->EEC_DTEMBA)),,.f.)
                DET->VALORNFS := Transform(nValorNfs,cPictNfs)
             EndIf            
          ELSE
       #ENDIF
             If ! EECFlags("FRESEGCOM") // JPP - 27/09/04 16:00 - Se a estrutura de dados da tabela EEQ é antiga. Mantem a leitura original dos dados.                                                                        
-               nValorNfs := ROUND(QRY->EEQ_VL * BuscaTaxa(QRY->EEC_MOEDA,QRY->EEC_DTEMBA,,.f.),2)
+               nValorNfs := QRY->EEQ_VL * BuscaTaxa(QRY->EEC_MOEDA,QRY->EEC_DTEMBA,,.f.)
                DET->VALORNFS := Transform(nValorNfs,cPictNfs)
             Else // lê os dados com base na tabela EEQ 
-               nValorNfs := ROUND(QRY->EEQ_VL * BuscaTaxa(QRY->EEQ_MOEDA,QRY->EEC_DTEMBA,,.f.),2)
+               nValorNfs := QRY->EEQ_VL * BuscaTaxa(QRY->EEQ_MOEDA,QRY->EEC_DTEMBA,,.f.)
                DET->VALORNFS := Transform(nValorNfs,cPictNfs)                  
             EndIf   
       #IFDEF TOP
@@ -421,19 +421,19 @@ Begin Sequence
       #IFDEF TOP
          IF TCSRVTYPE() <> "AS/400" 
             If ! EECFlags("FRESEGCOM") // JPP - 27/09/04 16:00 - Se a estrutura de dados da tabela EEQ é antiga. Mantem a leitura original dos dados.                                                                        
-               nValorCamb := ROUND(QRY->EEQ_VL * (nTxPTAX - BuscaTaxa(QRY->EEC_MOEDA,CtoD(TransData(QRY->EEC_DTEMBA)),,.f.)),2)
+               nValorCamb := QRY->EEQ_VL * (nTxPTAX - BuscaTaxa(QRY->EEC_MOEDA,CtoD(TransData(QRY->EEC_DTEMBA)),,.f.))         
                DET->VRCAMB := Transform(nValorCamb,cPictCamb)
             Else // lê os dados com base na tabela EEQ 
-               nValorCamb := ROUND(QRY->EEQ_VL * (nTxPTAX - BuscaTaxa(QRY->EEQ_MOEDA,CtoD(TransData(QRY->EEC_DTEMBA)),,.f.)),2)         
+               nValorCamb := QRY->EEQ_VL * (nTxPTAX - BuscaTaxa(QRY->EEQ_MOEDA,CtoD(TransData(QRY->EEC_DTEMBA)),,.f.))         
                DET->VRCAMB := Transform(nValorCamb,cPictCamb)                
             EndIf   
          ELSE
       #ENDIF
             If ! EECFlags("FRESEGCOM") // JPP - 27/09/04 16:00 - Se a estrutura de dados da tabela EEQ é antiga. Mantem a leitura original dos dados.                                                                        
-               nValorCamb := ROUND(QRY->EEQ_VL * (nTxPTAX - BuscaTaxa(QRY->EEC_MOEDA,QRY->EEC_DTEMBA,,.f.)),2)
+               nValorCamb := QRY->EEQ_VL * (nTxPTAX - BuscaTaxa(QRY->EEC_MOEDA,QRY->EEC_DTEMBA,,.f.))            
                DET->VRCAMB := Transform(nValorCamb,cPictCamb)
             Else // lê os dados com base na tabela EEQ       
-               nValorCamb := ROUND(QRY->EEQ_VL * (nTxPTAX - BuscaTaxa(QRY->EEQ_MOEDA,QRY->EEC_DTEMBA,,.f.)),2)            
+               nValorCamb := QRY->EEQ_VL * (nTxPTAX - BuscaTaxa(QRY->EEQ_MOEDA,QRY->EEC_DTEMBA,,.f.))            
                DET->VRCAMB := Transform(nValorCamb,cPictCamb)
             EndIf   
       #IFDEF TOP
@@ -623,10 +623,10 @@ oSecao1 := TRSection():New(oReport,"Seção 1",aTabelas,aOrdem)
 oSecao2 := TRSection():New(oReport,"Seção 2",{"CAB"},{})
 
 //Definição das colunas de impressão da seção 1
-TRCell():New(oSecao1,"PROCESSO"  , "DET", "Processo"        , /*Picture*/   , AVSX3("EEC_PREEMB",AV_TAMANHO)+4, /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSecao1,"DTPROCESSO", "DET", "Dt. Processo"    , /*Picture*/   , 015                           , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSecao1,"DTVENC"    , "DET", "Dt. Vencto"      , /*Picture*/   , 012                           , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSecao1,"IMPODE"    , "DET", STR0016           , /*Picture*/   , 062                           , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSecao1,"PROCESSO"  , "DET", "Processo"        , /*Picture*/   , AVSX3("EEC_PREEMB",AV_TAMANHO), /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSecao1,"DTPROCESSO", "DET", "Dt. Processo"    , /*Picture*/   , 010                           , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSecao1,"DTVENC"    , "DET", "Dt. Vencto"      , /*Picture*/   , 010                           , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSecao1,"IMPODE"    , "DET", STR0016           , /*Picture*/   , 060                           , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSecao1,"VALORNFS"  , "DET", "Valor R$"        , /*Picture*/   , LEN(AVSX3("EEM_VLNF"  ,AV_PICTURE))                           , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSecao1,"MOEDA"     , "DET", STR0015           , /*Picture*/   , AVSX3("EEC_MOEDA" ,AV_TAMANHO), /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSecao1,"VALORUSS"  , "DET", " /   Valor"      , /*Picture*/   , LEN(AVSX3("EEC_TOTPED"  ,AV_PICTURE))                           , /*lPixel*/, /*{|| code-block de impressao }*/)
@@ -637,8 +637,7 @@ oReport:Section("Seção 1"):Cell("VALORNFS"):SetColSpace(5)
 oSecao1:SetTotalInLine(.F.)
 oSecao1:SetTotalText("Total")
 
-oTotal:= TRFunction():New(oSecao1:Cell("VALORNFS"),NIL,"SUM",/*oBreak*/,"", AVSX3("EEC_TOTPED",AV_PICTURE),{|| ConvertNum(DET->VALORNFS)},.T.,.F.)
-
+oTotal:= TRFunction():New(oSecao1:Cell("VALORNFS"),NIL,"SUM",/*oBreak*/,"","@E 999,999,999.99",{|| ConvertNum(DET->VALORNFS)},.T.,.F.)
 oTotal:SetTotalInLine(.F.)
 
 
@@ -649,7 +648,7 @@ oReport:Section("Seção 2"):Cell("IMPORT"):SetCellBreak()
 TRCell():New(oSecao2,"PERIODO", "CAB", "Período"   , /*Picture*/, 030 , /*lPixel*/, /*{|| code-block de impressao }*/)
 oReport:Section("Seção 2"):Cell("PERIODO"):SetCellBreak()
 
-TRCell():New(oSecao2,"TXPTAX" , "CAB", "Taxa"      , /*Picture*/, 018 , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSecao2,"TXPTAX" , "CAB", "Taxa"      , /*Picture*/, 015 , /*lPixel*/, /*{|| code-block de impressao }*/)
 oReport:Section("Seção 2"):Cell("TXPTAX"):SetCellBreak()
 
 TRCell():New(oSecao2,"MOEDA"  , "CAB", STR0015     , /*Picture*/, 020 , /*lPixel*/, /*{|| code-block de impressao }*/)

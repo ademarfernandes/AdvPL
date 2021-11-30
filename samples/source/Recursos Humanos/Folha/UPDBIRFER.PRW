@@ -35,17 +35,7 @@ If !lContinua
 EndIf
 
 //Cria as perguntas no dicionário SX1 para filtro do processamento
-If GetRpoRelease() == "12.1.017"
-    fCriaSX1()
-    lSX1 := .T.
-Else
-    If !fVldSX1()
-        cMsg := OemToAnsi( "Para executar essa rotina é obrigatório possuir o grupo de perguntas UPDBFER." ) + CRLF
-        cMsg += OemToAnsi( "Verifique a documentação no TDN: http://tdn.totvs.com/x/8S1-Fw." )
-        MsgInfo( cMsg )
-        Return()
-    EndIf
-EndIf
+fCriaSX1()
 
 aAdd(aSays,OemToAnsi( "Este programa tem como objetivo gerar as verbas dos Ids 1562, 1722 e/ou 1723" ))
 aAdd(aSays,OemToAnsi( "no movimento acumulado (tabela SRD) dos funcionários de acordo com a verbas" ))
@@ -78,10 +68,8 @@ Static Function fProcessa()
 Local cAliasQry := GetNextAlias()
 Local cFilOld   := cFilAnt
 Local cJoinRDRV	:= "% " + FWJoinFilial( "SRD", "SRV" ) + " %"
-Local cExpDed   := ""
 Local cWhere    := ""
 Local cWhere1722:= ""
-Local cWhereDed := ""
 Local cWhereQRY := ""
 Local lNovo     := .F.
 
@@ -105,14 +93,12 @@ cWhere += "RD_DATARQ >= '" + mv_par03 + "' "
 
 //Periodo final
 cWhere += "AND RD_DATARQ <= '" + mv_par04 + "' "
-cWhereDed := cWhere
 
 //Filtro para somente trazer verbas que existam no cálculo de férias (SRH)
 cWhere += "AND EXISTS( SELECT SRR.RR_FILIAL, SRR.RR_MAT, SRR.RR_PD FROM " + RetSqlName('SRR') + " SRR WHERE SRR.RR_FILIAL = SRD.RD_FILIAL AND SRR.RR_MAT = SRD.RD_MAT AND SRR.RR_DATAPAG = SRD.RD_DATPGT AND SRR.RR_PD = SRD.RD_PD AND SRR.RR_ROTEIR = 'FER' AND SRR.D_E_L_E_T_ = ' ' )"
 
 //Prepara a variável para uso no BeginSql
 cWhereQRY := "%" + cWhere + "%"
-cWhereDed := "%" + cWhereDed + "%"
 
 //Processa a query e cria a tabela temporária com os resultados
 BeginSql alias cAliasQry
@@ -192,7 +178,7 @@ If lTem1723
     If !Empty(aCodFol[1722, 1])
         cWhere1722 += "SRV.RV_CODFOL IN ('0074','0079','0094','0095','0205','0206','0207','0208','0622','0623','0632','0633','0634','0635','1312','1313','1314','1315','1316','1317','1318','1319','1320','1321','1322','1323','1324','1325','1326','1327','1330','1331','1407','1408','1409','1410','1416','1417','1418','1419','1450','1451')"
         If lRefAbono
-            cWhere1722 += " OR SRV.RV_REFABON = '1'"
+            cWhere1722 += "OR SRV.RV_REFABON = '1'"
         EndIf
         cWhere1722 := "%" + cWhere1722 + "%"
         //Processa a query e cria a tabela temporária com os resultados
@@ -203,7 +189,7 @@ If lTem1723
             ON	%exp:cJoinRDRV% AND
                 SRV.RV_COD = SRD.RD_PD AND
                 SRV.%notDel%
-            WHERE %exp:cWhereDed% AND
+            WHERE %exp:cWhereQRY% AND
                     SRV.RV_TIPOCOD = '1' AND
                     SRD.RD_IR = 'N' AND 
                     ( %exp:cWhere1722% ) AND
@@ -271,11 +257,6 @@ If lTem1723
         (cAliasQry)->( dbCloseArea() )
     EndIf
     If !Empty(aCodFol[1723, 1])
-        If RetValSrv( aCodfol[65,1], SRA->RA_FILIAL, "RV_INCIRF" ) == "43"
-            cExpDed := "% SRV.RV_CODFOL = '0065' %"
-        Else
-            cExpDed := "% SRV.RV_CODFOL = '0168' %"
-        EndIf        
         //Processa a query e cria a tabela temporária com os resultados
         BeginSql alias cAliasQry
             SELECT SRD.RD_FILIAL, SRD.RD_MAT, SRD.RD_CC, SRD.RD_DATARQ, SRD.RD_SEMANA, SRD.RD_DATPGT, MIN(SRD.RD_SEQ) AS RD_SEQ, SUM(SRD.RD_VALOR) AS RD_VALOR
@@ -284,8 +265,8 @@ If lTem1723
             ON	%exp:cJoinRDRV% AND
                 SRV.RV_COD = SRD.RD_PD AND
                 SRV.%notDel%
-            WHERE %exp:cWhereDed% AND
-                    %exp:cExpDed% AND
+            WHERE %exp:cWhereQRY% AND
+                    SRV.RV_CODFOL = '0168' AND
                     SRD.%notDel%
             GROUP BY SRD.RD_FILIAL, SRD.RD_MAT, SRD.RD_CC, SRD.RD_DATARQ, SRD.RD_SEMANA, SRD.RD_DATPGT
         EndSql 
@@ -376,18 +357,3 @@ EngSX1117( cPerg 	    , "03"		,"Período inicial? (AAAAMM)", ""		, ""	        , '
 EngSX1117( cPerg 	    , "04"		,"Período final? (AAAAMM)"	, ""		, ""	        , 'MV_CH4'	, 'C'		, 6			,0				, 0				, 'G'	, 'NaoVazio()'						, ""		, ""		, "S"		, "MV_PAR04"		, "" 			, ""			, "" 	   		, ""			, "" 					, "" 					, "" 	 			, ""	  	, ""	   		, ""		  	, "" 		, ""	  		, ""	   		, "" 			, "" 			, ""	  		, {}	   	, {} 			, {} 			, ".UPDBFER04."	)
 
 Return
-
-/*/{Protheus.doc} fVldSX1
-Função que verifica as perguntas que serão utilizdas na rotina
-/*/
-Static Function fVldSX1()
-
-Local aAreaSX1  := SX1->( GetArea() )
-Local lOk       := .F.
-
-SX1->( dbSetOrder(1) )
-lOk := SX1->( dbSeek( cPerg ) )
-
-RestArea(aAreaSX1)
-
-Return lOk

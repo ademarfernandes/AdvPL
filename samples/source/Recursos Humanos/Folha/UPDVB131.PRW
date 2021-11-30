@@ -7,9 +7,6 @@ Local aSays     := {}
 Local cMsg      := ""
 Local lContinua := .F.
 Local nOpcA     := 0
-Local aErros	:= {}
-Local cMsgHelp	:= ""
-Local cLink		:= 'https://tdn.totvs.com/x/OFFvHw'
 
 Private aCodFol := {}
 Private aLog    := {}
@@ -25,20 +22,7 @@ If Len(aCodFol) >= 1628
 EndIf 
 
 //Se não existir cadastro da verba para o Id 1628, aborta o processamento da rotina
-// VERIFICA SE ENCONTROU O GRUPO DE PERGUNTAS
-If lContinua  .And. GetRpoRelease() != "12.1.017" .And. !SX1->(DbSeek('UPDVB131'))
-	cMsg :=  + CRLF + OemToAnsi("Não foi encontrado o grupo de perguntas: ") + Alltrim(cPerg)
-	
-	cMsgHelp := ""
-	cMsgHelp += + CRLF + OemToAnsi("Antes de prosseguir será necessário criar o grupo de perguntas. Para isso, siga as instruções contidos no link abaixo:")
-	cMsgHelp += + CRLF + cLink + CRLF
-
-	aAdd(aErros, cMsgHelp)
-	
-	Help(,, 'NOPERGUNT',, cMsg, 1, 0,,,,,, {aErros})
-			
-	Return()
-ElseIf !lContinua
+If !lContinua
 	cMsg := OemToAnsi( "Para executar essa rotina é obrigatório o cadastro das novas verbas do cálculo da 1ª parcela do 13º salário" ) + CRLF
 	cMsg += OemToAnsi( "conforme explicado na documentação disponível em: http://tdn.totvs.com/pages/viewpage.action?pageId=403745443" )
 	MsgInfo( cMsg )
@@ -46,9 +30,7 @@ ElseIf !lContinua
 EndIf
 
 //Cria as perguntas no dicionário SX1 para filtro do processamento
-If GetRpoRelease() <= "12.1.017"
-	fCriaSX1()
-EndIf
+fCriaSX1()
 
 aAdd(aSays,OemToAnsi( "Este programa tem como objetivo atualizar as verbas geradas no cálculo da 1ª parcela" ))
 aAdd(aSays,OemToAnsi( "do 13º salário no movimento acumulado (tabela SRD) para as novas verbas criadas para" ))

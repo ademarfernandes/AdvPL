@@ -64,27 +64,17 @@
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
 
 User Function Impresc()        // incluido pelo assistente de conversao do AP5 IDE em 05/07/00
-Local Imprime		:= 0
-Local aOfusca		:= If(FindFunction('ChkOfusca'), ChkOfusca(), { .T., .F., {"",""} }) //[1]Acesso; [2]Ofusca; [3]Mensagem
-Local aFldRel		:= {"RA_NOME", "RA_NUMCP", "RA_SERCP", "RA_UFCP", "RA_PIS", "RA_CTDPFGTS", "RA_NASC", "RA_ADMISSA", "RG_DATADEM"}
-Local lBlqAcesso	:= aOfusca[2] .And. !Empty( FwProtectedDataUtil():UsrNoAccessFieldsInList( aFldRel ) )
+Local Imprime	:= 0
 
 //Declaracao de variaveis utilizadas no programa atraves da funcao
 //SetPrvt, que criara somente as variaveis definidas pelo usuario,
 //identificando as variaveis publicas do sistema utilizadas no codigo
 //Incluido pelo assistente de conversao do AP5 IDE
-SetPrvt("NLIN,CONTADOR,LNULL,DET")
+SetPrvt("NLIN,CONTADOR,LNULL,DET") 
 
 nLin    := 0
 Contador:= 1
 lNull   := .F.
-
-//Tratamento de acesso a Dados Sensíveis
-If lBlqAcesso
-	//"Dados Protegidos- Acesso Restrito: Este usuário não possui permissão de acesso aos dados dessa rotina. Saiba mais em {link documentação centralizadora}"
-	Help(" ",1,aOfusca[3,1],,aOfusca[3,2],1,0)
-	Return
-EndIf
 
 fCabecalho()
 
@@ -95,23 +85,23 @@ For Imprime := 1 to Max(Len(aPdv),Len(aPdd))
 		Else
 			Det := Space(44)
 		Endif
-
+	
 		If Imprime + 16 <= Len(aPdv)
 			Det := Det + Space(3) + aPdv[Imprime + 16]
 		Else
 			Det := Det + Space(45)
 		Endif
-
+		
 		If Imprime <= Len(aPdd)
 			Det := Det + Space(3) + aPdd[Imprime]
 		Else
 			Det := Det + Space(45)
 		EndIf
-
+		
 		If Len(Alltrim(Det)) <> 0
 			@ nLin,0 PSAY ( Det )
-			nLin := nLin + 1
-			Contador := Contador + 1
+		   nLin := nLin + 1
+		   Contador := Contador + 1
 		Else
 			Exit
 		Endif
@@ -121,13 +111,13 @@ For Imprime := 1 to Max(Len(aPdv),Len(aPdd))
 		Else
 			Det := Space(44)
 		Endif
-
+	
 		If Imprime + If(Len(aPdv)%2>0,Len(aPdv)/2-1,Len(aPdv)/2) <= Len(aPdv)
 			Det := Det + Space(3) + aPdv[Imprime + Len(aPdv)/2]
 		Else
 			Det := Det + Space(44)
 		Endif
-
+		
 		If Imprime <= Len(aPdd)
 			Det := Det + Space(3) + aPdd[Imprime]
 		Else
@@ -141,7 +131,7 @@ For Imprime := 1 to Max(Len(aPdv),Len(aPdd))
 		Else
 			Exit
 		Endif
-
+		
 		If Contador > 16
 			lNull := .T.
 			fRodape()
@@ -256,33 +246,33 @@ Obtem o penultimo salario do funcionario antes da demissao.
 @param cVerbSal, characters, Código da verba de salário
 /*/
 Static Function PenunSal(dAdmissao, dDemissao, cVerbas, cVerbSal)
-
+	
 	Local nEpoch		:= Set(_SET_EPOCH)	//OBTEM A CONFIGURACAO DE SECULO CORRENTE
 	Local aArea			:= GetArea()
 	Local aSRCArea		:= SRC->(GetArea())
 	Local aPerAtual		:= {}
 	//DATA DO PENULTIMO SALARIO
-	Local dDTPenSal
+	Local dDTPenSal 
 	Local dDataDe
 	Local dDataAte
 	Local nValPenSal
 	Local cFilMat		:= SRA->(RA_FILIAL+RA_MAT)
-
-	DEFAULT dAdmissao	:= SRA->RA_ADMISSA
-	DEFAULT dDemissao	:= SRG->RG_DATADEM
-	DEFAULT cVerbas		:= ''
+	
+	DEFAULT dAdmissao	:= SRA->RA_ADMISSA	
+	DEFAULT dDemissao	:= SRG->RG_DATADEM  
+	DEFAULT cVerbas		:= ''  
 	DEFAULT cVerbSal	:= acodfol[318, 1]
-
+	
 	fGetPerAtual(@aPerAtual, xFilial("RCH", SRA->RA_FILIAL), SRA->RA_PROCES, fGetCalcRot('1'))
 	If ! Empty(aPerAtual)
 		dDataDe  := aPerAtual[1, 6]
 		dDataAte := aPerAtual[1, 7]
 	EndIf
-
+	
 	Set(_SET_EPOCH, 1920)	//ALTERA O SET EPOCH PARA 1920
-
+	
 	dDTPenSal := If(Month(dDemissao) - 1 != 0, CtoD( '01/' + StrZero(Month(dDemissao) - 1, 2) + '/' + Right(StrZero(Year(dDemissao), 4), 2)), CtoD('01/12/' + Right(StrZero(Year(dDemissao) - 1, 4), 2)) )
-
+	
 	If MesAno(dDtPenSal) < MesAno(dAdmissao)
 		dDTPenSal 	:= CTOD("  /  /  ")
 		nValPenSal 	:= 0.00
@@ -303,10 +293,10 @@ Static Function PenunSal(dAdmissao, dDemissao, cVerbas, cVerbSal)
 			Endif
 		Endif
 	Endif
-
+	
 	//RESTAURA O SET EPOCH PADRAO
 	Set(_SET_EPOCH, nEpoch)
-
+	
 	RestArea(aSRCArea)
 	RestArea(aArea)
 

@@ -49,7 +49,7 @@ IF COVERI("ALA")
          // EXPORTADOR
          mDET := ""
          mDET := mDET+REPLICATE(ENTER,08)               // LINHAS EM BRANCO
-         mDET := mDET+MARGEM+SPACE(63)+alltrim(aCAB[2,4])+ENTER  // PAIS DO EXPORTADOR
+         mDET := mDET+MARGEM+SPACE(70)+aCAB[2,4]+ENTER  // PAIS DO EXPORTADOR
          mDET := mDET+REPLICATE(ENTER,3)
          // RODAPE
          mROD := ""

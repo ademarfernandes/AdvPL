@@ -368,13 +368,6 @@ n_X:= GPER140Sum(1,1,"048/112",,,1) //CONSIDERAR AVISO PREVIO TRABALHADO NO MES 
 n_X1:=GPER140Sum(1,1,"048/112",,2,1)
 n_X2:=GPER140Sum(2,1,"113",,2,1)
 
-If P_LDSRSALD .And. !(SRA->RA_CATFUNC == "S" .AND. SRA->RA_TIPOPGT == "S" )
-	If !EMPTY(ACODFOL[1399,1])
-		n_X1 += GPER140Sum(1,1,"1399",,2,1)
-	EndIf
-	n_X1  := n_X1 / (SRA->RA_HRSMES/30)
-EndIf
-
 If n_X1 == Nil .or. empty(n_X1)
 	n_X1 := 0
 EndIf
@@ -1578,7 +1571,7 @@ EndIf
 oPrint:say (nL+nTip+nPT,160,STR0021	, oFont08) 					//24 DATA DE ADMISSAO
 oPrint:say (nL+nTip+nPD,175,DtoC(SRA->RA_ADMISSA), oFont10)
 oPrint:say (nL+nTip+nPT,650,STR0022, oFont08) 					//25 DATA DO AVISO PREVIO
-oPrint:say (nL+nTip+nPD,665,Iif(Alltrim(SRG->RG_TPAVISO) $ "N", "",  DtoC(SRG->RG_DTAVISO)), oFont10)
+oPrint:say (nL+nTip+nPD,665,DtoC(SRG->RG_DTAVISO), oFont10)
 oPrint:say (nL+nTip+nPT,1045,STR0026, oFont08) 					//26 DATA DE AFASTAMENTO
 oPrint:say (nL+nTip+nPD,1060,DtoC(SRG->RG_DATADEM), oFont10)
 oPrint:say (nL+nTip+nPT,1440	,STR0028	, oFont08)	 			//27 COD. AFAST.
@@ -2099,7 +2092,7 @@ cCodAfa		:= fTabela(cTabRes,nPos,25)
 oPrint:say (nL+nTip+nPT+10,586+15,STR0021	, oFont08) //"24 DATA DE ADMISSAO"
 oPrint:say (nL+nTip+nPD+10,586+30,DtoC(SRA->RA_ADMISSA), oFont10)
 oPrint:say (nL+nTip+nPT+10,972+15,STR0022, oFont08) //"25 DATA DO AVISO PREVIO"
-oPrint:say (nL+nTip+nPD+10,972+30,Iif(Alltrim(SRG->RG_TPAVISO) $ "N", "", DtoC(SRG->RG_DTAVISO)), oFont10)
+oPrint:say (nL+nTip+nPD+10,972+30,DtoC(SRG->RG_DTAVISO), oFont10)
 oPrint:say (nL+nTip+nPT+10,1358+15,STR0026, oFont08)//"26 DATA DE AFASTAMENTO"
 oPrint:say (nL+nTip+nPD+10,1358+30,DtoC(SRG->RG_DATADEM), oFont10)
 oPrint:say (nL+nTip+nPT+10,1758+15,STR0155	, oFont08) //"27 COD. AFASTAMENTO"

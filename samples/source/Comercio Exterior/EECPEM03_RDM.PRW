@@ -181,7 +181,7 @@ Begin Sequence
       @ 30,020 SAY "NBR " PIXEL OF oPanel
       @ 30,040 MSGET oGetNbr VAR cNBR SIZE 55,08 PIXEL OF oPanel // WHEN !Empty(cCOURIER)
       
-      @ 30,100 SAY "WILL BE INFORMED WHEN COPIES FAXED" PIXEL OF oPanel
+      @ 30+n7,100 SAY "WILL BE INFORMED WHEN COPIES FAXED" PIXEL OF oPanel
       
       oPanel:Align:= CONTROL_ALIGN_ALLCLIENT
 

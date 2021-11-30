@@ -106,13 +106,13 @@ If !Eof()
 	@ 00,00 PSAY AvalImp( Colunas ) 
 	@ 01,00 PSAY " " + Replicate("-",78) + " "
 	If ! (SRL->RL_CODRET $ '5952/5987/5960/5979' )
-		@ 02,00 PSAY STR0001	//"|         MINISTERIO DA ECONOMIA      | COMPROVANTE ANUAL DE RENDIMENTOS PAGOS |"
-	 	@ 03,00 PSAY STR0002	//"|         SECRETARIA ESPECIAL DA      | OU CREDITADOS E DE RETENCAO DE IMPOSTO |"
-		@ 04,00 PSAY STR0003	//"|        RECEITA FEDERAL DO BRASIL    |   DE RENDA NA FONTE - PESSOA JURIDICA  |"
+		@ 02,00 PSAY STR0001	//"|         MINISTERIO DA FAZENDA       | COMPROVANTE ANUAL DE RENDIMENTOS PAGOS |"
+	 	@ 03,00 PSAY STR0002	//"|                                     | OU CREDITADOS E DE RETENCAO DE IMPOSTO |"
+		@ 04,00 PSAY STR0003	//"|     SECRETARIA DA RECEITA FEDERAL   |   DE RENDA NA FONTE - PESSOA JURIDICA  |"
    Else
-		@ 02,00 PSAY STR0044	//"|         MINISTERIO DA ECONOMIA      | COMPROVANTE ANUAL DE RETENCAO DE CSLL, |"
-	 	@ 03,00 PSAY STR0045	//"|         SECRETARIA ESPECIAL DA      |  COFINS E PIS/PASEP - PESSOA JURIDICA  |"
-		@ 04,00 PSAY STR0046	//"|         RECEITA FEDERAL DO BRASIL   |                                        |"
+		@ 02,00 PSAY STR0044	//"|         MINISTERIO DA FAZENDA       | COMPROVANTE ANUAL DE RETENCAO DE CSLL, |"
+	 	@ 03,00 PSAY STR0045	//"|                                     |  COFINS E PIS/PASEP - PESSOA JURIDICA  |"
+		@ 04,00 PSAY STR0046	//"|     SECRETARIA DA RECEITA FEDERAL   |                                        |"
    EndIf
 	@ 05,00 PSAY STR0004+"   "+PADR(MV_PAR08,14)+"|"	//"|                                     |         ANO CALENDARIO"
 	@ 06,00 PSAY " " + Replicate("-",78) + " "
@@ -442,9 +442,9 @@ Return()
 /*
 LAY-OUT MODELO
  ------------------------------------------------------------------------------ 
-|         MINISTERIO DA ECONOMIA      | COMPROVANTE ANUAL DE RENDIMENTOS PAGOS |
-|         SECRETARIA ESPECIAL DA      | OU CREDITADOS E DE RETENCAO DE IMPOSTO |
-|        RECEITA FEDERAL DO BRASIL    |   DE RENDA NA FONTE - PESSOA JURIDICA  |
+|         MINISTERIO DA FAZENDA       | COMPROVANTE ANUAL DE RENDIMENTOS PAGOS |
+|                                     | OU CREDITADOS E DE RETENCAO DE IMPOSTO |
+|     SECRETARIA DA RECEITA FEDERAL   |   DE RENDA NA FONTE - PESSOA JURIDICA  |
 |                                     |         ANO CALENDARIO 9999            |
  ------------------------------------------------------------------------------ 
   1. - Fonte Pagadora        

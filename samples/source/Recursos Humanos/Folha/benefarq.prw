@@ -143,9 +143,8 @@ Local cMatDe    := ''
 Local cMatAte   := ''
 Local cPedDe    := ''
 Local cPedAte   := ''
-Local cArqIni   := ''
-Local cFuncVal  := ''
-Local cProces   := ''
+Local cArqIni   := ""
+Local cFuncVal  := ""
 Local nCount    := 0
 Local nPos      := 0
 Local dAdm      := cTod(" / / ")
@@ -192,7 +191,6 @@ Private aSeqEnd := {}
 //Carrega Perguntas
 cFornecedor := MV_PAR01                     //Fornecedor selecionado
 cTiposSel   := MV_PAR02                     //Tipos Selecionados
-cProces		:= MV_PAR04						//Processo
 cPeriodo    := MV_PAR05                     //Periodo
 cNumPag     := MV_PAR06                     //Nro Pagamento
 cFilDe      := MV_PAR07                     //Da Filial
@@ -320,13 +318,6 @@ Endif
 
 //Abrir Tabela
 DbUseArea( .T., "TOPCONN", TcGenQry( ,, cQuery), "QD02VB", .T., .F.)
-
-QD02VB->(DbGoTop())
-
-If ( QD02VB->(Eof() ))
-	oProcess:SaveLog(STR0057) //""Não foi possível encontrar registros na tabela de Funcionários (SRA). Confira os parâmetros (Filial/Centro de Custo/Matricula/Data de Admissão) informados no filtro!"
-EndIf
-
 QD02VB->(DbGoTop())
 
 nSeqEnd := 0
@@ -382,7 +373,7 @@ Next nTp
 //--------------------------------------------------------------------------------//
 nTotRegTP3 := 0
 If lNovoCalc
-	cSelect  := "SELECT DISTINCT RA_FILIAL,RA_CC,RA_PROCES,RA_MAT,RA_NOME,RA_ADMISSA,RA_DEMISSA,RA_LOCBNF, "
+	cSelect  := "SELECT DISTINCT RA_FILIAL,RA_CC,RA_MAT,RA_NOME,RA_ADMISSA,RA_DEMISSA,RA_LOCBNF, "
 	cSelect  += " RA_ENDEREC,RA_COMPLEM,RA_BAIRRO,RA_MUNICIP,RA_ESTADO,RA_CEP,RA_TELEFON, "
 	cSelect  += " RA_NASC,RA_CIC,RA_RG,RA_MAE,RA_EMAIL,RA_ESTCIVI,RA_SEXO,RA_PAI "
 	
@@ -399,7 +390,6 @@ If lNovoCalc
 	cFrom  += " AND RA_CC >= '" + cCcDe + "' AND RA_CC <= '" + cCcAte + "' "
 	cFrom  += " AND RA_MAT >= '" + cMatDe + "' AND RA_MAT <= '" + cMatAte + "' "
 	cFrom  += " AND RA_ADMISSA <= '" + cAdm + "' "
-	cFrom  += " AND RA_PROCES = '" + cProces + "' "
 	cFrom  += " AND R0_TPBEN IN(" + cQryAux + ") "
 	cFrom  += " AND R0_PEDIDO = '" + cReprocessa +"'"
 	cFrom  += " AND R0_PERIOD = '" + cPeriodo  +"'"
@@ -418,7 +408,7 @@ If lNovoCalc
 	cQryFech := cFrom
 	cQuery  := cSelect + cFrom
 Else
-	cQuery  := "SELECT RG2.*, RA_FILIAL,RA_CC,RA_PROCES,RA_MAT,RA_NOME,RA_ADMISSA,RA_DEMISSA,RA_LOCBNF, "
+	cQuery  := "SELECT RG2.*, RA_FILIAL,RA_CC,RA_MAT,RA_NOME,RA_ADMISSA,RA_DEMISSA,RA_LOCBNF, "
 	cQuery  += " RA_ENDEREC,RA_COMPLEM,RA_BAIRRO,RA_MUNICIP,RA_ESTADO,RA_CEP,RA_TELEFON, "
 	cQuery  += " RA_NASC,RA_CIC,RA_RG,RA_MAE,RA_EMAIL,RA_ESTCIVI,RA_SEXO,RA_PAI "
 	cQuery  += " FROM " + RetSqlName("RG2") + " RG2 "
@@ -434,7 +424,6 @@ Else
 	cQuery  += " AND RA_CC >= '" + cCcDe + "' AND RA_CC <= '" + cCcAte + "' "
 	cQuery  += " AND RA_MAT >= '" + cMatDe + "' AND RA_MAT <= '" + cMatAte + "' "
 	cQuery  += " AND RA_ADMISSA <= '" + cAdm + "' "
-	cQuery  += " AND RA_PROCES = '" + cProces + "' "
 	cQuery  += " AND RG2_TPBEN IN(" + cQryAux + ") "
 	cQuery  += " AND RG2_PEDIDO = " + cReprocessa 
 	cQuery  += " AND RG2_PERIOD = " + cPeriodo 
@@ -460,17 +449,6 @@ Endif
 //Abrir Tabela
 DbUseArea( .T., "TOPCONN", TcGenQry( ,, cQuery), "QD03VB", .T., .F.)
 
-QD03VB->(DbGoTop())
-
-If ( lNovoCalc)
-	If ( QD03VB->(Eof() ))
-		oProcess:SaveLog(STR0058) //"Não foi possível encontrar registros na tabela de Benefícios(SR0). Confira os parâmetros (Filial/Centro de Custo/Matrícula/Data de Admissão/Processo/Período) informados no filtro!"
-	EndIf
-else
-	If ( QD03VB->(Eof() ))
-		oProcess:SaveLog(STR0059) //Não foi possível encontrar registros na tabela de Histórico de Benefícios(RG2). Confira os parâmetros (Filial/Centro de Custo/Matrícula/Data de Admissão/Processo/Período) informados no filtro!
-	EndIf
-EndIf	
 //Atualiza regua
 oProcess:SetRegua2(QD03VB->(RecCount()))
 oProcess:IncRegua2("")
@@ -727,7 +705,11 @@ While QD03VB->(!Eof())
 		
 		//Totaliza Registros
 		nTotal += nVlr
-    EndIf	
+    EndIf
+	
+
+	
+	
 	
 	//IncProc("Processando...")
 	QD03VB->(dbSkip())
@@ -820,14 +802,18 @@ Endif
 //Carrega Filial
 If lNovoCalc
 	cFilialAnt := QD03VB->RA_FILIAL
-	cFilReg := QD03VB->RA_FILIAL
 Else
 	cFilialAnt := QD03VB->RG2_FILIAL
-	cFilReg := QD03VB->RG2_FILIAL
 EndIf
-cCcAnt := QD03VB->RA_CC
 
 While !QD03VB->(Eof())
+
+	If lNovoCalc
+		cFilReg := QD03VB->RA_FILIAL
+	Else
+		cFilReg := QD03VB->RG2_FILIAL
+	EndIf
+	
 
 	//Abortado Pelo Operador
 	If lAbortPrint
@@ -845,12 +831,6 @@ While !QD03VB->(Eof())
 			nVlr := aItens[nPos][2][nI][2]
 			cDet := QD03VB->RA_FILIAL + Space(2) + QD03VB->RA_MAT + Space(2) + QD03VB->RA_NOME + Space(10) + aItens[nPos][2][nI][1] + Space(9) +Transform(nVlr,'@E 999,999.99')
 			Impr(cDet,'C')
-			nTfunc   += 1
-			nTccFunc += 1
-			nTFlFunc += 1
-			nTBen    += nVlr
-			nTccBen  += nVlr
-			nTFlBen  += nVlr
 		Next nI
 	Else
 		nVlr := QD03VB->RG2_VALCAL
@@ -859,23 +839,16 @@ While !QD03VB->(Eof())
 	EndIf
 	QD03VB->(dbSkip())
 	
-	If lNovoCalc
-		cFilReg := QD03VB->RA_FILIAL
-	Else
-		cFilReg := QD03VB->RG2_FILIAL
-	EndIf
-	
 	IncRegua(STR0021)
 	
 	//Totaliza
-	If !lNovoCalc
-		nTfunc   += 1
-		nTccFunc += 1
-		nTFlFunc += 1
-		nTBen    += nVlr
-		nTccBen  += nVlr
-		nTFlBen  += nVlr
-	EndIf
+	nTfunc   += 1
+	nTccFunc += 1
+	nTFlFunc += 1
+	nTBen    += nVlr
+	nTccBen  += nVlr
+	nTFlBen  += nVlr
+	
 	If nOrd == 2
 		If cCcAnt != QD03VB->RA_CC .Or. cFilialAnt != cFilReg
 			cCcAnt := QD03VB->RA_CC
@@ -921,6 +894,15 @@ While !QD03VB->(Eof())
 		
 		nTFlFunc := 0
 		nTFlBen  := 0
+		
+		If !QD03VB->(Eof())
+			dbSelectArea("CTT")
+			dbSetOrder(1)	//-CTT_FILIAL+CTT_CUSTO
+			dbSeek(xFilial("CTT")+QD03VB->RA_CC,.F.)
+			
+			cDet := Space(5) + AllTrim(QD03VB->RA_CC) + " - " + CTT->CTT_DESC01
+			Impr(cDet,'C')
+		Endif
 		
 	Endif
 	

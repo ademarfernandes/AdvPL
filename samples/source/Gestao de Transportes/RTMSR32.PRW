@@ -698,13 +698,7 @@ oDamdfe:Say(0158, 0192, SubStr(AllTrim(aCab[3]), 7, 2) + '/'   +;
 
 oDamdfe:Say(0150, 0284, "UF Carreg."  , oFont08N)	//Folha
 If lXml
-	
-	If (ValType(oNFe:_MDFE:_INFMDFE:_IDE:_INFMUNCARREGA)  =='A')
-		cCodEst:= Substr(oNfe:_MDFE:_INFMDFE:_IDE:_INFMUNCARREGA[1]:_CMUNCARREGA:TEXT,1,2)
-	Else
-		cCodEst:= Substr(oNfe:_MDFE:_INFMDFE:_IDE:_INFMUNCARREGA:_CMUNCARREGA:TEXT,1,2)
-	EndIf
-
+	cCodEst:= Substr(oNfe:_MDFE:_INFMDFE:_IDE:_INFMUNCARREGA:_CMUNCARREGA:TEXT,1,2)
 	If aScan(aUF,{|x| x[2] ==  AllTrim(cCodEst) }) != 0
 		cUF := aUF[ aScan(aUF,{|x| x[2] == AllTrim(cCodEst) }), 1]
 	EndIf

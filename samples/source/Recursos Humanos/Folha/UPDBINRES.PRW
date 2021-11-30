@@ -7,9 +7,6 @@ Local aSays     := {}
 Local cMsg      := ""
 Local lContinua := .F.
 Local nOpcA     := 0
-Local aErros	:= {}
-Local cMsgHelp	:= ""
-Local cLink		:= 'https://tdn.totvs.com/x/D4uMHw'
 
 Private aCodFol := {}
 Private aLog    := {}
@@ -25,20 +22,7 @@ If Len(aCodFol) >= 1661
 EndIf 
 
 //Se não existir cadastro da verba para o Id 1661, aborta o processamento da rotina
-// VERIFICA SE ENCONTROU O GRUPO DE PERGUNTAS
-If lContinua  .And. GetRpoRelease() != "12.1.017" .And. !SX1->(DbSeek('UPDBINRES'))
-	cMsg :=  + CRLF + OemToAnsi("Não foi encontrado o grupo de perguntas: ") + Alltrim(cPerg)
-	
-	cMsgHelp := ""
-	cMsgHelp += + CRLF + OemToAnsi("Antes de prosseguir será necessário criar o grupo de perguntas. Para isso, siga as instruções contidos no link abaixo:")
-	cMsgHelp += + CRLF + cLink + CRLF
-
-	aAdd(aErros, cMsgHelp)
-	
-	Help(,, 'NOPERGUNT',, cMsg, 1, 0,,,,,, {aErros})
-			
-	Return()
-ElseIf !lContinua
+If !lContinua
 	cMsg := OemToAnsi( "Para executar essa rotina é obrigatório o cadastro da verba (Tipo 4 - Base Desconto) do seguinte identificador:" ) + CRLF
 	cMsg += OemToAnsi( "1661 - Base dedutora INSS 13º" )
 	MsgInfo( cMsg )
@@ -46,9 +30,7 @@ ElseIf !lContinua
 EndIf
 
 //Cria as perguntas no dicionário SX1 para filtro do processamento
-If GetRpoRelease() <= "12.1.017"
-	fCriaSX1()
-EndIf
+fCriaSX1()
 
 aAdd(aSays,OemToAnsi( "Este programa tem como objetivo gerar a verba do Id 1661 - Base dedutora INSS 13º" ))
 aAdd(aSays,OemToAnsi( "no movimento de rescisão (tabela SRR) para os funcionários que foram demitidos após" ))

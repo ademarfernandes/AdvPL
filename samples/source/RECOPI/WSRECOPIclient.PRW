@@ -144,7 +144,7 @@ cSoap += '<MONITORRECOPI xmlns="http://localhost:8081/">'
 cSoap += WSSoapValue("MONITORRECOPI", ::oWSMONITORRECOPI, oWSMONITORRECOPI , "MONITORRECOPI", .T. , .F., 0 , NIL, .F.) 
 cSoap += "</MONITORRECOPI>"
 
-oXmlRet := SvcSoapCall(	ObjSelf(Self),cSoap,; 
+oXmlRet := SvcSoapCall(	Self,cSoap,; 
 	"http://localhost:8081/MONITORRECOPI",; 
 	"DOCUMENT","http://localhost:8081/",,"1.031217",; 
 	"http://localhost:8081/RECOPI.apw")
@@ -170,7 +170,7 @@ cSoap += WSSoapValue("ID_ENT", ::cID_ENT, cID_ENT , "string", .T. , .F., 0 , NIL
 cSoap += WSSoapValue("AMBIENTE", ::nAMBIENTE, nAMBIENTE , "integer", .T. , .F., 0 , NIL, .F.) 
 cSoap += "</RECOPICONFIG>"
 
-oXmlRet := SvcSoapCall(	ObjSelf(Self),cSoap,; 
+oXmlRet := SvcSoapCall(	Self,cSoap,; 
 	"http://localhost:8081/RECOPICONFIG",; 
 	"DOCUMENT","http://localhost:8081/",,"1.031217",; 
 	"http://localhost:8081/RECOPI.apw")
@@ -196,7 +196,7 @@ cSoap += WSSoapValue("ID_ENT", ::cID_ENT, cID_ENT , "string", .T. , .F., 0 , NIL
 cSoap += WSSoapValue("RECOPILISTACONFIRMACOES", ::oWSRECOPILISTACONFIRMACOES, oWSRECOPILISTACONFIRMACOES , "RECOPILISTACONFIRMACOES", .T. , .F., 0 , NIL, .F.) 
 cSoap += "</RECOPILISTACONFIRMACOES>"
 
-oXmlRet := SvcSoapCall(	ObjSelf(Self),cSoap,; 
+oXmlRet := SvcSoapCall(	Self,cSoap,; 
 	"http://localhost:8081/RECOPILISTACONFIRMACOES",; 
 	"DOCUMENT","http://localhost:8081/",,"1.031217",; 
 	"http://localhost:8081/RECOPI.apw")
@@ -222,7 +222,7 @@ cSoap += WSSoapValue("ID_ENT", ::cID_ENT, cID_ENT , "string", .T. , .F., 0 , NIL
 cSoap += WSSoapValue("RECOPICONTROLEESTOQUE", ::oWSRECOPICONTROLEESTOQUE, oWSRECOPICONTROLEESTOQUE , "RECOPICONTROLEESTOQUE", .T. , .F., 0 , NIL, .F.) 
 cSoap += "</RECOPILISTACONTROLEESTOQUE>"
 
-oXmlRet := SvcSoapCall(	ObjSelf(Self),cSoap,; 
+oXmlRet := SvcSoapCall(	Self,cSoap,; 
 	"http://localhost:8081/RECOPILISTACONTROLEESTOQUE",; 
 	"DOCUMENT","http://localhost:8081/",,"1.031217",; 
 	"http://localhost:8081/RECOPI.apw")
@@ -248,7 +248,7 @@ cSoap += WSSoapValue("ID_ENT", ::cID_ENT, cID_ENT , "string", .T. , .F., 0 , NIL
 cSoap += WSSoapValue("RECOPIINCLUSOESNF", ::oWSRECOPIINCLUSOESNF, oWSRECOPIINCLUSOESNF , "RECOPIINCLUSOESNF", .T. , .F., 0 , NIL, .F.) 
 cSoap += "</RECOPILISTAINCLUSOESNF>"
 
-oXmlRet := SvcSoapCall(	ObjSelf(Self),cSoap,; 
+oXmlRet := SvcSoapCall(	Self,cSoap,; 
 	"http://localhost:8081/RECOPILISTAINCLUSOESNF",; 
 	"DOCUMENT","http://localhost:8081/",,"1.031217",; 
 	"http://localhost:8081/RECOPI.apw")
@@ -274,7 +274,7 @@ cSoap += WSSoapValue("ID_ENT", ::cID_ENT, cID_ENT , "string", .T. , .F., 0 , NIL
 cSoap += WSSoapValue("RECOPISOLICITACAO", ::oWSRECOPISOLICITACAO, oWSRECOPISOLICITACAO , "RECOPISOLICITACAO", .T. , .F., 0 , NIL, .F.) 
 cSoap += "</RECOPILISTASOLICITACOES>"
 
-oXmlRet := SvcSoapCall(	ObjSelf(Self),cSoap,; 
+oXmlRet := SvcSoapCall(	Self,cSoap,; 
 	"http://localhost:8081/RECOPILISTASOLICITACOES",; 
 	"DOCUMENT","http://localhost:8081/",,"1.031217",; 
 	"http://localhost:8081/RECOPI.apw")

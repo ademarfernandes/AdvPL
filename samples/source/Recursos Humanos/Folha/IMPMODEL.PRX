@@ -887,11 +887,11 @@ aAdd( aImpFun, { '__Esp12' 								,'E'	,'' } )	// Linha vazia
 aAdd( aImpFun, { OemtoAnsi(STR0055)					,'E'	,'' } )	//"3) __________________________________________________________________________"
 aAdd( aImpFun, { '__Esp12' 								,'E'	,'' } )	// Linha vazia
 aAdd( aImpFun, { '__Esp12' 								,'E'	,'' } )	// Linha vazia
-aAdd( aImpFun, { OemtoAnsi(STR0056)					,'E'	,'' } )	//"Obs.: Estou ciente de que, se o empregador constatar qualquer irregularidade ou falta grave na minha declaração acima ou uso indevido do vale transporte, poderei ser dispensado de conformidade com o artigo 482 da C.L.T. e artigo 7 parágrafo 3 do decreto n.º 95.247 de 17/11/87."
+aAdd( aImpFun, { OemtoAnsi(STR0056)					,'E'	,'' } )	//"Obs.: Estou ciente de que, se o empregador constatar qualquer irregularidade ou falta grave na minha declara acima ou uso indevido do vale transporte, poderei ser dispensado de conformidade com o artigo 482 da C.L.T. e artigo 7 parágrafo 3 do decreto n.º 95.247 de 17/11/87."
 aAdd( aImpFun, { '__Esp12' 								,'E'	,'' } )	// Linha vazia
 aAdd( aImpFun, { OemtoAnsi(STR0057)					,'E'	,'' } )	//"* Reconheço que me será descontado mensalmente uma parcela equivalente a 6 % do salário básico ou vencimento."
 aAdd( aImpFun, { '__Esp06' 								,'E'	,'' } )	// 1/2 Linha vazia
-aAdd( aImpFun, { OemtoAnsi(STR0058)					,'E'	,'' } )	//"* Quando ocorrer mudança de endereço ou modificação do meio do serviço de transporte, deverá ser preenchida nova declaração: "
+aAdd( aImpFun, { OemtoAnsi(STR0058)					,'E'	,'' } )	//"* Quando ocorrer mudança de endereço ou modificação do mio do serviço de transporte, deverá ser preenchida nova declaração: "
 aAdd( aImpFun, { '__Esp12' 								,'E'	,'' } )	// Linha vazia
 aAdd( aImpFun, { '__Esp12' 								,'E'	,'' } )	// Linha vazia
 aAdd( aImpFun, { AllTrim( cCidDat )					,'E'	,'B'} )	// Cidade e data

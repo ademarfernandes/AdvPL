@@ -1,6 +1,6 @@
 #INCLUDE "PROTHEUS.CH"
-#INCLUDE "RECSANT.CH"
 #INCLUDE "RWMAKE.CH"
+#DEFINE CRLF CHR( 13 )+CHR( 10 )
 
 /*                                                                                                                             
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
@@ -82,7 +82,7 @@ Private aCodFol		:= {}
 Private li     		:= 0
 Private nHdl   		:= 0
 PRIVATE nSeq_  		:= 0
-Private Titulo 		:= STR0001 //"GERAÇÃO DE ARQUIVO SANTANDER P/RECIBOS DE PAGAMENTOS"
+Private Titulo 		:= "GERAÇÃO DE ARQUIVO SANTANDER P/RECIBOS DE PAGAMENTOS"
 Private GERAOK
 Private aPerAberto	:= {}
 Private aPerFechado	:= {}
@@ -98,10 +98,10 @@ pergunte( cPerg, .F. )
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 //³ Montagem da tela de processamento.                                  ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-@ 000,000 TO 250,500 DIALOG GERAOK TITLE OemToAnsi(STR0002) //"Geração Holerite Eletronico - Bco Santander"
+@ 000,000 TO 250,500 DIALOG GERAOK TITLE OemToAnsi("Geração Holerite Eletronico - Bco Santander")
 
-@ 030,010 SAY OemtoAnsi(STR0003) //'Este programa fara a geração do arquivo magnetico para envio '
-@ 040,010 SAY OemtoAnsi(STR0004) //'ao Banco Santander para disponibilização do Holerite Eletronico '
+@ 030,010 SAY OemtoAnsi('Este programa fara a geração do arquivo magnetico para envio ')
+@ 040,010 SAY OemtoAnsi('ao Banco Santander para disponibilização do Holerite Eletronico ')
 
 @ 104,162 BMPBUTTON TYPE 5 ACTION Pergunte(cPerg,.T.)
 @ 104,190 BMPBUTTON TYPE 2 ACTION Close(GERAOK)
@@ -216,7 +216,7 @@ Else
 	cCodRec := 'P'
 EndIf
 
-Processa({|| GERRImp() },STR0021) //"Processando..."
+Processa({|| GERRImp() },"Processando...")
 
 //Gerar Arquivo
 If nHdl > 0
@@ -224,35 +224,26 @@ If nHdl > 0
 		
 		If nSeq_ <> 0 
 			
-			Aviso( STR0014, STR0005 + AllTrim( AllTrim( cNomeArq ) ) + CRLF + CRLF + ; 
-			STR0006 + cNum , {STR0017}, 3 )  // 'AVISO'#'Gerado o arquivo '#'Guarde o número do lote deste arquivo para eventual substituição: '# 'OK'
+			Aviso( 'AVISO', 'Gerado o arquivo ' + AllTrim( AllTrim( cNomeArq ) ) + CRLF + CRLF + ;
+			'Guarde o número do lote deste arquivo para eventual substituição: ' + cNum , {'OK'}, 3 )
 			
 			If Len(aIncons) > 0 
-				aadd(aTitulo, STR0007 + Titulo) //INCONSISTÊNCIAS NA 
-				
-				Aadd(aIncons,{STR0008			+ CRLF	+; //'Favor analisar as tabelas de composição do recibo, pois pode existir inconsistências nas mesmas.'
-							  STR0009		   	+ CRLF	+; //SRA - Funcionários
-							  STR0010 	  		+ CRLF	+; //RCH - Período de Calculos
-							  STR0011 			+ CRLF	+; //SRD - Histórico de Movimentos
-							  STR0012			+ CRLF	+; //SRC - Movimento do Período   
-							  STR0013 ,""})  //SRV - Verbas   
-				
+				aadd(aTitulo, "INCONSISTÊNCIAS NA " + Titulo)
 				fMakeLog(aIncons,aTitulo, Nil,Nil,FunName(),Titulo)
-				
 			endIf
 			
 						
 		Else
 			If fErase( cNomeArq ) == 0
 				If lContinua
-					Aviso( STR0014, STR0015 + AllTrim( AllTrim( cNomeArq ) ) + STR0016 , {STR0017} ) //'AVISO'#'Não existem registros a serem gravados. A geração do arquivo '#' foi abortada ...'#'OK'
+					Aviso( 'AVISO', 'Não existem registros a serem gravados. A geração do arquivo ' + AllTrim( AllTrim( cNomeArq ) ) + ' foi abortada ...', {'OK'} )
 				EndIf
 			Else
-				MsgAlert( STR0018 + AllTrim( cNomeArq )+'.' ) //'Ocorreram problemas na tentativa de deleção do arquivo '
+				MsgAlert( 'Ocorreram problemas na tentativa de deleção do arquivo '+AllTrim( cNomeArq )+'.' )
 			EndIf
 		EndIf
 	Else
-		MsgAlert( STR0019 + AllTrim( cNomeArq )+'.' ) //'Ocorreram problemas no fechamento do arquivo '
+		MsgAlert( 'Ocorreram problemas no fechamento do arquivo '+AllTrim( cNomeArq )+'.' )
 	EndIf
 EndIf
 
@@ -319,11 +310,11 @@ aAdd( aTipo0, { 'DATA DE CREDITO ( AAAAMMDD )         ', 103, 110,   'N',   8,  
 aAdd( aTipo0, { 'DATA DE DISPONIBILIZAÇÃO ( AAAAMMDD )', 111, 118,   'N',   8,  0, .T. ,'Dtos(dDatLibera)' } )//DATA DE DISPONIBILIZAÇÃO DOS HOLERITES PARA CONSULTA 
 aAdd( aTipo0, { 'DATA DE GERAÇÃO  ( AAAAMMDD )        ', 119, 126,   'N',   8,  0, .T. ,'Dtos(DATE())' } )
 aAdd( aTipo0, { 'HORA DE GERAÇÃO  ( HHMMSS )          ', 127, 132,   'N',   6,  0, .T. ,'StrTran(TIME(),":","")' } )
-aAdd( aTipo0, { 'CODIGO DO BANCO                      ', 133, 136,   'C',   4,  0, .T. ,'cBancoEmp' } )//DEVE SER 0008, 0033 OU  0353
-aAdd( aTipo0, { 'CODIGO DA AGENCIA DA EMPRESA         ', 137, 140,   'C',   4,  0, .T. ,'cAgencEmp' } )//
-aAdd( aTipo0, { 'CONTA CORRENTE DA EMPRESA            ', 141, 152,   'C',  12,  0, .T. ,'cContaEmp' } )//
+aAdd( aTipo0, { 'CODIGO DO BANCO                      ', 133, 136,   'N',   4,  0, .T. ,'cBancoEmp' } )//DEVE SER 0008, 0033 OU  0353
+aAdd( aTipo0, { 'CODIGO DA AGENCIA DA EMPRESA         ', 137, 140,   'N',   4,  0, .T. ,'cAgencEmp' } )//
+aAdd( aTipo0, { 'CONTA CORRENTE DA EMPRESA            ', 141, 152,   'N',  12,  0, .T. ,'cContaEmp' } )//
 aAdd( aTipo0, { 'TIPO PAGAMENTO                       ', 153, 153,   'C',   1,  0, .T. ,'cCodRec' } ) 
-aAdd( aTipo0, { 'FILLER                               ', 154, 400,   'C', 247,  0, .F. ,'Space(247)' } )
+aAdd( aTipo0, { 'FILLER                               ', 141, 152,   'C', 247,  0, .F. ,'  ' } )
 
 // Registro Header do funcionário - TIPO 1
 aTipo1 := {}
@@ -344,7 +335,7 @@ aAdd( aTipo1, { 'FILLER                               ', 226, 240,   'C',  15,  
 aAdd( aTipo1, { 'FILLER                               ', 241, 252,   'N',  12,  0, .F. , '  ' } )
 aAdd( aTipo1, { 'CARGO DO FUNCIONÁRIO                 ', 253, 267,   'C',  15,  0, .F. , 'GetAdvFVal( "SRJ", "RJ_DESC", xFilial( "SRJ" )+SRA->RA_CODFUNC, 1, "" )' } )
 aAdd( aTipo1, { 'INDICADOR DE MATRÍCULA               ', 268, 268,   'C',   1,  0, .T. , '"N"' } ) // S - FUNCIONÁRIO POSSUI MAIS DE UMA MATRICULA, N OU VAZIO - POSSUI SOMENTE UMA MATRICULA
-aAdd( aTipo1, { 'FILLER                               ', 269, 400,   'C', 132,  0, .F. , 'Space(132)' } )
+aAdd( aTipo1, { 'FILLER                               ', 269, 400,   'C', 132,  0, .F. , '  ' } )
 
 // Registro Detalhes do Comprovante - TIPO 2
 aTipo2 := {}
@@ -352,7 +343,7 @@ aTipo2 := {}
 aAdd( aTipo2, { 'TIPO DE REGISTRO                     ', 001, 001,   'N',   1,  0, .T. , '"2"' } )
 aAdd( aTipo2, { 'NÚMERO DE MATRÍCULA DO FUNCIONÁRIO   ', 002, 021,   'C',  20,  0, .T. , 'padL(SRA->RA_MAT,20,"0")' } )
 aAdd( aTipo2, { 'SEQUENCIA DO LANÇAMENTO              ', 022, 024,   'N',   3,  0, .T. , 'nSeqLanc' } )
-aAdd( aTipo2, { 'CÓDIGO DE LANÇAMENTO                 ', 025, 031,   'C',   7,  0, .T. , 'StrZero(Val(cCodLan),7)' } )
+aAdd( aTipo2, { 'CÓDIGO DE LANÇAMENTO                 ', 025, 031,   'N',   7,  0, .T. , 'cCodLan' } )
 aAdd( aTipo2, { 'DESCRIÇÃO DE LANÇAMENTO              ', 032, 054,   'C',  23,  0, .T. , 'UPPER(cDescLan)' } )
 aAdd( aTipo2, { 'FILLER                               ', 055, 057,   'C',   3,  0, .F. , '  ' } )
 aAdd( aTipo2, { 'VALOR DO LANÇAMENTO                  ', 058, 066,   'N',   9,  2, .T. , 'nValLan' } )
@@ -363,7 +354,7 @@ aAdd( aTipo2, { 'QUANTIDADE DA UNIDADE DE TRABALHO    ', 157, 161,   'N',   5,  
 aAdd( aTipo2, { 'FILLER                               ', 162, 162,   'C',   1,  0, .F. , '  ' } )
 aAdd( aTipo2, { 'PRIVADO BANCO                        ', 163, 170,   'C',   8,  0, .T. , '"00010101"' } )
 aAdd( aTipo2, { 'PRIVADO BANCO                        ', 171, 178,   'C',   8,  0, .T. , '"00010101"' } )
-aAdd( aTipo2, { 'FILLER                               ', 179, 400,   'C', 222,  0, .F. ,'Space(222)' } )
+aAdd( aTipo2, { 'FILLER                               ', 179, 400,   'C', 222,  0, .F. ,'  ' } )
 
 // Registro Trailer do funcionário TIPO 3
 aTipo3 := {}
@@ -371,7 +362,7 @@ aTipo3 := {}
 aAdd( aTipo3, { 'TIPO DE REGISTRO                     ', 001, 001,   'N',   1,  0, .T. , '"3"' } )
 aAdd( aTipo3, { 'NÚMERO DE MATRÍCULA DO FUNCIONÁRIO   ', 002, 021,   'C',  20,  0, .T. , 'PadL(SRA->RA_MAT,20,"0")' } )
 aAdd( aTipo3, { 'TOTAL DÉBITO FUNCIONÁRIO             ', 022, 036,   'N',  15,  2, .F. , 'TOTDESC' } )
-aAdd( aTipo3, { 'TOTAL CRÉDITO FUNCIONÁRIO            ', 037, 051,   'N',  15,  2, .F. , 'TOTVENC' } )
+aAdd( aTipo3, { 'TOTAL CRÉDITO FUNCIONÁRIO            ', 037, 052,   'N',  15,  2, .F. , 'TOTVENC' } )
 aAdd( aTipo3, { 'TOTAL LÍQUIDO FUNCIONÁRIO            ', 052, 066,   'N',  15,  2, .F. , 'TOTVENC-TOTDESC' } )
 aAdd( aTipo3, { 'QUANTIDADE DE LANÇAMENTOS FUNCIONÁRIO', 067, 076,   'N',  10,  0, .T. , 'nQtdComp' } )
 aAdd( aTipo3, { 'BASE IRRF                            ', 077, 085,   'C',   9,  0, .T. , '"BASE IRRF"' } )
@@ -381,10 +372,10 @@ aAdd( aTipo3, { 'BASE INSS                            ', 105, 113,   'C',   9,  
 aAdd( aTipo3, { 'VALOR BASE INSS                      ', 114, 123,   'X',  10,  0, .T. , 'TRANSFORM(nAteLim, "@E 999,999.99")' } )//Deverá conter (exemplo ‘999.999,99’) Alinhar à direita, com preenchimento de espaços não utilizados com brancos a esquerda.
 aAdd( aTipo3, { 'BASE FGTS                            ', 124, 132,   'C',   9,  0, .T. , '"BASE FGTS"' } )
 aAdd( aTipo3, { 'VALOR BASE FGTS                      ', 133, 142,   'X',  10,  0, .T. , 'TRANSFORM(nBaseFgts, "@E 999,999.99")' } )//Deverá conter (exemplo ‘999.999,99’) Alinhar à direita, com preenchimento de espaços não utilizados com brancos a esquerda. 
-aAdd( aTipo3, { 'FILLER                               ', 143, 151,   'C',   9,  0, .F. , 'Space(9)' } )
+aAdd( aTipo3, { 'FILLER                               ', 143, 151,   'C',   9,  0, .F. , '  ' } )
 aAdd( aTipo3, { 'FGTS MÊS                             ', 152, 160,   'C',   9,  0, .T. , '"FGTS MES "' } )
 aAdd( aTipo3, { 'VALOR FGTS MÊS                       ', 161, 170,   'X',  10,  0, .T. , 'TRANSFORM(nFgts, "@E 999,999.99")' } )//Deverá conter (exemplo ‘999.999,99’) Alinhar à direita, com preenchimento de espaços não utilizados com brancos a esquerda. 
-aAdd( aTipo3, { 'FILLER                               ', 171, 400,   'C', 230,  0, .F. , 'Space(230)' } )
+aAdd( aTipo3, { 'FILLER                               ', 171, 400,   'C', 230,  0, .F. , '  ' } )
 
 // Registro Trailer da Empresa - TIPO 9
 aTipo9 := {}
@@ -406,10 +397,10 @@ begin sequence
 
 //Verifica se Arquivo Existe
 If File( cNomeArq )
-	If ( nAviso := Aviso( STR0014 ,STR0022 + AllTrim( cNomeArq ) + STR0023, {'Sim', 'Não'} ) ) == 1 // 'AVISO'#'Deseja substituir o ' # ' existente ?'
+	If ( nAviso := Aviso( 'AVISO', 'Deseja substituir o ' + AllTrim( cNomeArq ) + ' existente ?', {'Sim', 'Não'} ) ) == 1
 		//Deleta Arquivo
 		If fErase( cNomeArq ) <> 0
-			MsgAlert( STR0020 + AllTrim( cNomeArq )+'.' ) //'Ocorreram problemas na tentativa de deleção do arquivo '
+			MsgAlert( 'Ocorreram problemas na tentativa de deleção do arquivo '+AllTrim( cNomeArq )+'.' )
 			Return NIL
 		EndIf
 	Else
@@ -419,7 +410,7 @@ EndIf
 
 //Verifica se Nome de Arquivo em Branco
 If Empty( cNomeArq )
-	MsgAlert( STR0024, STR0025 ) //'Nome do Arquivo nos Parametros em Branco.'#'Atenção!'
+	MsgAlert( 'Nome do Arquivo nos Parametros em Branco.', 'Atenção!' )
 	Return NIL
 Else
 	//Cria Arquivo
@@ -429,7 +420,7 @@ Else
 	
 	//Verifica Criacao do Arquivo
 	If nHdl == -1
-		MsgAlert( STR0027 + AllTrim( cNomeArq )+ STR0026, STR0025 ) //'O arquivo '#' não pode ser criado! Verifique os parametros.'#'Atenção!' 
+		MsgAlert( 'O arquivo '+AllTrim( cNomeArq )+' não pode ser criado! Verifique os parametros.', 'Atenção!' )
 		Return NIL
 	EndIf
 EndIf
@@ -593,15 +584,12 @@ While SRA->(!EOF()) .AND. &cInicio <= cFim
 										aPerAberto	  					,; // Array com os Periodos e Numero de pagamento abertos
 										aPerFechado	 	 				 ) // Array com os Periodos e Numero de pagamento fechados
 	
-	If Len(aVerbasFunc) <= 0
-		SRA->( DbSkip() )
-		Loop
+	if len(aVerbasFunc) <= 0
+		SRA->( dbSkip())
+		loop 
 	EndIf
 
-	//Ordenação por tipo de verba
-	aSort( aVerbasFunc ,,, { |x,y| x[1] + x[2] + Posicione( "SRV", 1, xFilial("SRV",x[1]) + x[3], "RV_TIPOCOD" ) + x[3] < y[1] + y[2] + Posicione( "SRV", 1, xFilial("SRV",y[1]) + y[3], "RV_TIPOCOD" ) + y[3] } )
-
-	DbSelectArea( "SRA" )
+	dbSelectArea( "SRA" )
 		
 	GeraBDN1()
 	GeraBDN2()
@@ -664,7 +652,7 @@ Return
 Static Function GravaReg
 
 If fWrite( nHdl, cReg, Len( cReg ) ) <> Len( cReg )
-	If !MsgYesNo( STR0028 + AllTrim( cNomeArq )+ STR0029, STR0025 ) //'Ocorreu um erro na gravação do arquivo '#'.   Continua?'#'Atenção!' 
+	If !MsgYesNo( 'Ocorreu um erro na grava‡„o do arquivo '+AllTrim( cNomeArq )+'.   Continua?', 'Aten‡„o!' )
 		lContinua := .F.
 		Return NIL
 	EndIf
@@ -894,7 +882,7 @@ Return NIL
 Static Function GeraBDN9()
 nSeq_++
 nTotRLote++
-FWrite( nHdl, GeraLinhas( aTipo9 ,.T. ))
+FWrite( nHdl, GeraLinhas( aTipo9 ) )
 
 PutMV( 'ES_SEQBDN', cNum  )
 
@@ -915,12 +903,12 @@ Return NIL
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
-Static Function GeraLinhas( aTipo, lTot )
+Static Function GeraLinhas( aTipo )
 Local cLinha     	:= ''
 Local nTamMaxLin 	:= 250
 Local nI         	:= 0
 local cNomCampo		:= ""
-Default lTot		:= .F. 
+
 For nI := 1 To Len( aTipo )
 
 	bAux      := &( '{ || ' + aTipo[nI][8] + ' } ' )
@@ -936,16 +924,12 @@ For nI := 1 To Len( aTipo )
 	
 	If     cTipo == 'C' .AND. (!lObrigat .OR. !empty(uConteudo))
 			uConteudo := PADR( FwNoAccent(SubStr( AllTrim( uConteudo ), 1, nTamanho )), nTamanho )
-	ElseIf cTipo == 'N' .AND. (!lObrigat .OR. Val(uConteudo) >= 0)
+	ElseIf cTipo == 'N' .AND. (!lObrigat .OR. Val(uConteudo) > 0)
 			uConteudo := StrZero( Val( uConteudo ) * (10^nDecimal) , nTamanho )
 	ElseIf cTipo == 'X' .AND. (!lObrigat .OR. !empty(uConteudo))
 			uConteudo := PADL( SubStr( AllTrim( uConteudo ), 1, nTamanho ), nTamanho )
 	Else
-		If lTot
-			Aadd(aIncons,{STR0031 + cNomCampo + STR0030 ,""}) //'O Campo '#'é obrigatorio porém esta vazio ou menor que zero.'
-		Else
-			Aadd(aIncons,{STR0031 + cNomCampo + STR0032 + SRA->RA_FILIAL + ' - ' + SRA->RA_MAT   + STR0030,""}) //'O Campo '#' do funcionário '#' é obrigatorio porém esta vazio ou menor que zero.'
-		EndIf
+		Aadd(aIncons,{'O Campo '+ cNomCampo +' do funcionário '+ SRA->RA_FILIAL + ' - ' + SRA->RA_MAT   +' é obrigatorio porém esta vazio ou menor que zero.',""})
 		lAbortFunc := .T.
 		return cLinha
 	EndIf

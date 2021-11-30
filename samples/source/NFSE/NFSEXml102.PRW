@@ -73,9 +73,7 @@ Local aTelDest		:= {}
 Local aConstr 		:= {} 
 Local aMVNFSOBRA	:= &(GetNewPar("MV_NFSOBRA","{}"))
 Local aValIssTit	:= {}
-Local aRetSX5		:= {}
-
-Local cDesSX5		:= ""
+   
 Local cString    	:= ""
 Local cAliasSE1  	:= "SE1"
 Local cAliasSD1  	:= "SD1"
@@ -693,20 +691,13 @@ ElseIf cTipo == "1"
 					cNatOper := SF4->F4_TEXTO
 				EndIf
 			Else	
-				dbSelectArea( "SX5" )
-				dbSetOrder( 1 )
-				aRetSX5 := FWGetSX5( '13',SF4->F4_CF )
-				
-				if( !empty( aRetSX5 ) )
-					cDesSX5 := aRetSX5[ 1 ][ 4 ]
-					cDesSX5 := allTrim( subStr( cDesSX5,1,55 ) )
-				endIf
-
+				dbSelectArea("SX5")
+				dbSetOrder(1)
+				dbSeek(xFilial("SX5")+"13"+SF4->F4_CF)
 				If Empty(cNatOper)
-					cNatOper := cDesSX5
+					cNatOper := AllTrim(SubStr(SX5->X5_DESCRI,1,55))
     			EndIf
     		EndIf 
-
 			If SF4->(FieldPos("F4_CFPS")) > 0
 				cCFPS:=SF4->F4_CFPS
 			EndIf
@@ -794,21 +785,12 @@ ElseIf cTipo == "1"
 					cMensFis := "Total do desconto Ref. a Zona Franca de Manaus / ALC. R$ "+str(SF3->F3_VALOBSE-SF2->F2_DESCONT,13,2)
 				EndIf 			
 			EndIf			
-			
-			//---------------------------------------------------------------------------------
-			// - Obtem a descricao da tabela SX5
-			// - Tabela 60 - Conforme Item da Lista de Servico informado no Cad. de Produtos
-			//---------------------------------------------------------------------------------
-			dbSelectArea( "SX5" )
-			dbSetOrder( 1 )
-			aRetSX5		:= FWGetSX5( '60',RetFldProd( SB1->B1_COD,"B1_CODISS" ) )
-			
-			if( !empty( aRetSX5 ) )
-				cDesSX5 := iif( FindFunction( 'CleanSpecChar' ),CleanSpecChar( aRetSX5[ 1 ][ 4 ] ),aRetSX5[ 1 ][ 4 ] )
-				cDesSX5 := allTrim( subStr( cDesSX5,1,55 ) )
-			endIf
-			
-			cDescServ := cDesSX5
+
+			dbSelectArea("SX5")
+			dbSetOrder(1)
+			If dbSeek(xFilial("SX5")+"60"+RetFldProd(SB1->B1_COD,"B1_CODISS"))
+				cDescServ := If(FindFunction('CleanSpecChar'),CleanSpecChar(AllTrim(SubStr(SX5->X5_DESCRI,1,55))),AllTrim(SubStr(SX5->X5_DESCRI,1,55)))    			
+   			EndIf
 			
 			dbSelectArea("SC5")
 			dbSetOrder(1)
@@ -1364,17 +1346,11 @@ Else
 					cNatOper := SF4->F4_TEXTO
 				EndIf
 			Else	
-				dbSelectArea( "SX5" )
-				dbSetOrder( 1 )
-				aRetSX5 := FWGetSX5( '13',SF4->F4_CF )
-
-				if( !empty( aRetSX5 ) )
-					cDesSX5 := aRetSX5[ 1 ][ 4 ]
-					cDesSX5 := allTrim( subStr( cDesSX5,1,55 ) )
-				endIf
-
+				dbSelectArea("SX5")
+				dbSetOrder(1)
+				dbSeek(xFilial("SX5")+"13"+SF4->F4_CF)
 				If Empty(cNatOper)
-					cNatOper := cDesSX5
+					cNatOper := AllTrim(SubStr(SX5->X5_DESCRI,1,55))
     			EndIf
     		EndIf 
     		

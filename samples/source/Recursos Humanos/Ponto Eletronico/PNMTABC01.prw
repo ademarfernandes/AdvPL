@@ -5,7 +5,6 @@ static _cEscala 	:= ""
 static _cCalend 	:= ""
 static _lSum444 	:= TDV->(FieldPos("TDV_FERSAI")) > 0 .AND. TDV->(FieldPos("TDV_FSTPEX")) > 0 .AND. TDV->(FieldPos("TDV_FSEXTN")) > 0 // Verificação de campos para sumula 444
 static _lIntra 	:= TDW->(FieldPos("TDW_INTRA")) > 0 // Verificação de campos para intrajornada
-Static aDiasNProc	:= {}
 
 //ESTRUTURA DO ARRAY DE EXCEÇÕES
 #DEFINE EXCECAO_DIAS 01
@@ -110,15 +109,12 @@ User Function PNMTABC01()
 			cCodAtend := GetAtend(cFil, cMat)
 			If !Empty(cCodAtend)
 				//Realiza carregamento da Agenda do Atendente.
-				aCalend := ProcFunc(aCalend, cCodAtend)
-				If !EMPTY(aDiasNProc)
-					AjustaDias(@aCalend)
-				EndIf
+				aCalend := ProcFunc(aCalend, cCodAtend)				
 			EndIf
 		EndIf
 
 	EndIf
-	aDiasNProc	:= {}
+
 Return aCalend
 
 
@@ -146,7 +142,7 @@ Static Function ProcFunc(aCalend, cCodAtend)
 	For nI:=1 To Len(aCalend)	
 		If aCalend[nI][CALEND_POS_TIPO_MARC] == "1E"
 			
-			aRows := TrataAgenda(aClone(aCalend[nI]), aAgenda, aCalendAux )
+			aRows := TrataAgenda(aClone(aCalend[nI]), aAgenda )
 			
 			If Len(aRows) > 1
 				For nJ:=1 To Len(aRows)
@@ -169,7 +165,7 @@ Realiza tratamento para geração do calendário baseado na agenda do Atendente
 @param aAgenda, array, Informações da agenda do atendente
 @return aRows, array, Linhas geradas para o aTabCalend de acordo com a agenda do atendente 
 /*/
-Static Function TrataAgenda(aRow, aAgenda, aCalendAux)
+Static Function TrataAgenda(aRow, aAgenda)
 	Local nPos := 0	
 	Local aRows := {}
 	Local nI := 1
@@ -222,8 +218,8 @@ Static Function TrataAgenda(aRow, aAgenda, aCalendAux)
 		Next nI
 		
 	Else
-		aAdd(aRows, getRowFolg( aRow, .T., aCalendAux, aAgenda,.T.))
-		aAdd(aRows, getRowFolg( aRow, .F., aCalendAux, aAgenda,.T.))		
+		aAdd(aRows, getRowFolg( aRow, .T.))
+		aAdd(aRows, getRowFolg( aRow, .F.))		
 	EndIf	
 	
 Return aRows
@@ -252,13 +248,9 @@ Ajusta linha do aTabCalend para indicar dia de folga do atendente
 @param lEntrada, Boolean, Indica se será realizdo processamento de Entrada ou Saída
 @return aRow, array com linha de folga para o aTabCalend
 /*/
-Static Function getRowFolg(aBase, lEntrada, aCalendAux, aAgenda, lAltera)
+Static Function getRowFolg(aBase, lEntrada)
 	Local aRow := aClone(aBase)
-	Local nX := 0
-	Local nPosAux := 0
-	Local cPOS_SEQ := ""
-	Default lAltera := .F.
-	Default aAgenda := {}
+	
 	If lEntrada
 		aRow[CALEND_POS_TIPO_MARC	] := "1E"
 	Else
@@ -266,76 +258,9 @@ Static Function getRowFolg(aBase, lEntrada, aCalendAux, aAgenda, lAltera)
 	EndIf
 	
 	aRow[CALEND_POS_HORA] := 0
-	If !lAltera
-		aRow[CALEND_POS_TIPO_DIA] := 'N'
-	Else
-		For nX := LEN(aCalendAux) to 1 STEP -1
-			If !EMPTY(aCalendAux[nX][CALEND_POS_HORA]) .AND. aCalendAux[nX][CALEND_POS_TIPO_DIA] == 'S'
-				nPosAux := nX
-				Exit
-			ENdIf
-		Next nX
-		
-		If nPosAux > 0
-			aRow[CALEND_POS_TURNO] := aCalendAux[nPosAux][CALEND_POS_TURNO]
-			cPOS_SEQ := aCalendAux[nPosAux][CALEND_POS_SEQ_TURNO]
-			If !EMPTY(aAgenda) .AND. (aRow[CALEND_POS_DATA_APO] >= aAgenda[1][1] .AND. aRow[CALEND_POS_DATA_APO] <= aAgenda[Len(aAgenda)][1])
-				aRow[CALEND_POS_TIPO_DIA] := NextDayType(aCalendAux[nPosAux][CALEND_POS_DATA_APO], aCalendAux[nPosAux][CALEND_POS_TURNO],@cPOS_SEQ, aRow[CALEND_POS_DATA_APO] - aCalendAux[nPosAux][CALEND_POS_DATA_APO])
-			Else
-				aRow[CALEND_POS_TIPO_DIA] := 'N'
-			EndIf
-			aRow[CALEND_POS_SEQ_TURNO] := cPOS_SEQ
-		Else
-			aRow[CALEND_POS_TIPO_DIA] := 'N'
-			If !EMPTY(aAgenda) .AND. (aRow[CALEND_POS_DATA_APO] >= aAgenda[1][1] .AND. aRow[CALEND_POS_DATA_APO] <= aAgenda[Len(aAgenda)][1])
-				AADD(aDiasNProc, aRow)
-			EndIf
-		EndIf
-	EndIf
+	aRow[CALEND_POS_TIPO_DIA] := 'N'
 Return aRow
 
-Static Function NextDayType(dDtBase, cTurno, cSeqBase, nDays)
-Local cRet := 'N'
-Local nAuxDia
-Local aSeqTno := {}
-Local cQry := GetNextAlias()
-
-If !EMPTY(dDtBase) .AND. !EMPTY(cTurno) .AND. !EMPTY(cSeqBase) .AND. nDays > 0
-	nAuxDia := DOW(dDtBase)
-	
-	BeginSQL Alias cQry
-		SELECT DISTINCT PJ_SEMANA 
-		  FROM %Table:SPJ% SPJ
-		 WHERE SPJ.PJ_FILIAL = %xFilial:SPJ%
-		   AND SPJ.%NotDel%
-		   AND SPJ.PJ_TURNO = %Exp:cTurno%
-	EndSQL
-	
-	While (cQry)->(!Eof())
-		AADD(aSeqTno, (cQry)->(PJ_SEMANA))
-		(cQry)->(DbSkip())
-	End
-	(cQry)->(DbCloseArea())
-	
-	While nDays > 0
-		If nAuxDia + 1 == 2
-			If LEN(aSeqTno) == ASCAN(aSeqTno, cSeqBase)
-				cSeqBase := aSeqTno[1]
-			Else
-				cSeqBase := aSeqTno[(ASCAN(aSeqTno, cSeqBase) + 1)]
-			EndIF
-			nAuxDia++
-		ElseIf nAuxDia + 1 == 8
-			nAuxDia := 1
-		Else
-			nAuxDia++
-		EndIf
-		nDays--
-	End
-	cRet := POSICIONE("SPJ",1,xFilial("SPJ") + cTurno + cSeqBase + cValToChar(nAuxDia), "PJ_TPDIA")
-EndIf
-
-Return cRet
 
 /*/{Protheus.doc} GetRowByAg
 Recupera 
@@ -1224,16 +1149,9 @@ Return aAgenda
 
 
 Static Function GetAtend(cFil, cMat)
-	Local cCod 		:= ""
+	Local cCod := ""
 	Local cAliasTrb := GetNextAlias()
-	Local cQuery	:= "% %"
-	Local lAA1MSBL	:= AA1->( ColumnPos('AA1_MSBLQL')) > 0
 	
-	If lAA1MSBL
-		cQuery := "%"
-		cQuery += " AND AA1.AA1_MSBLQL <> '1' "
-		cQuery += "%"
-	EndIf
 	BeginSQL Alias cAliasTrb
 		SELECT AA1_CODTEC
 		
@@ -1244,7 +1162,7 @@ Static Function GetAtend(cFil, cMat)
 			AA1.AA1_CDFUNC = %Exp:cMat% AND
 			AA1.AA1_FUNFIL = %Exp:cFil% AND
 			AA1.%NotDel%
-			%Exp:cQuery%
+
 	EndSQL
 	
 	If (cAliasTrb)->(!EOF())
@@ -1281,75 +1199,77 @@ Recupera informações das exceções da escala
 @version 1.0
 @param cEscala, character, Escala
 @return aExec, Estrutura com as exceções da escala
-/*/
-Static Function LoadExcec(cEscala)
+/*/Static Function LoadExcec(cEscala)
 	Local aExec := Array(EXCECAO_ELEMENTOS)
-	Local cSql := ""
-	Local cAliasQry := ""
-	Local aArea := GetArea()
+	Local nI := 1	
+	Local nY := 1
+	Local oModel := Nil
 	Local aAux := {}
 	
-	cSql += " SELECT TDX.TDX_TURNO "
-	cSql += " ,TDX.TDX_SEQTUR "
-	cSql += " ,TDY.TDY_DIASEM "
-	cSql += " ,TDY.TDY_ENTRA1 "
-	cSql += " ,TDY.TDY_SAIDA1 "
-	cSql += " ,TDY.TDY_ENTRA2 "
-	cSql += " ,TDY.TDY_SAIDA2 "
-	cSql += " ,TDY.TDY_ENTRA3 "
-	cSql += " ,TDY.TDY_SAIDA3 "
-	cSql += " ,TDY.TDY_ENTRA4 "
-	cSql += " ,TDY.TDY_SAIDA4 "
-	cSql += " ,TDY.TDY_HREXT "
-	cSql += " ,TDY.TDY_TROSEQ "
-	cSql += " ,TDY.TDY_HORMEN "
-	cSql += " ,TDY.TDY_HORMAI "
-	cSql += " ,TDY.TDY_FERIAD "
-	cSql += " FROM " + RetSqlName("TDY") + " TDY "
-	cSql += " INNER JOIN " + RetSqlName("TDX") + " TDX "
-	cSql += " ON TDY.TDY_CODTDX = TDX.TDX_COD "
-	cSql += " AND TDX.TDX_FILIAL = '" + xFilial('TDX') + "' "
-	cSql += " AND TDX.D_E_L_E_T_ = ' ' "
-	cSql += " AND TDX.TDX_CODTDW = '" + cEscala + "' "
-	cSql += " WHERE "
-	cSql += " TDY.TDY_FILIAL = '" + xFilial('TDY') + "' "
-	cSql += " AND TDY.D_E_L_E_T_ = ' ' "
 	
-	cSql := ChangeQuery(cSql)
-	cAliasQry := GetNextAlias()
-	dbUseArea( .T., "TOPCONN", TCGENQRY(,,cSql),cAliasQry, .F., .T.)
-	If !(cAliasQry)->(EOF())
-		aExec[EXCECAO_DIAS] := {}
-		aExec[EXCECAO_FERIADOS] := {}
-	EndIf
-	While !(cAliasQry)->(EOF())
-
-		aAux := Array(EXCECAO_ITEM_ELEMENTOS)
-		aAux[EXCECAO_ITEM_TURNO]		:= (cAliasQry)->TDX_TURNO
-		aAux[EXCECAO_ITEM_SEQUENCIA]	:= (cAliasQry)->TDX_SEQTUR
-		aAux[EXCECAO_ITEM_DIASEM]		:= (cAliasQry)->TDY_DIASEM
-		aAux[EXCECAO_ITEM_ENTRA1]		:= (cAliasQry)->TDY_ENTRA1
-		aAux[EXCECAO_ITEM_SAIDA1]		:= (cAliasQry)->TDY_SAIDA1
-		aAux[EXCECAO_ITEM_ENTRA2]		:= (cAliasQry)->TDY_ENTRA2
-		aAux[EXCECAO_ITEM_SAIDA2]		:= (cAliasQry)->TDY_SAIDA2
-		aAux[EXCECAO_ITEM_ENTRA3]		:= (cAliasQry)->TDY_ENTRA3
-		aAux[EXCECAO_ITEM_SAIDA3]		:= (cAliasQry)->TDY_SAIDA3
-		aAux[EXCECAO_ITEM_ENTRA4]		:= (cAliasQry)->TDY_ENTRA4
-		aAux[EXCECAO_ITEM_SAIDA4]		:= (cAliasQry)->TDY_SAIDA4
-		aAux[EXCECAO_ITEM_TIPO]			:= (cAliasQry)->TDY_HREXT
-		aAux[EXCECAO_ITEM_TROCASEQ]		:= (cAliasQry)->TDY_TROSEQ
-		aAux[EXCECAO_ITEM_LIM_INFERIOR] := (cAliasQry)->TDY_HORMEN
-		aAux[EXCECAO_ITEM_LIM_SUPERIOR]	:= (cAliasQry)->TDY_HORMAI
-
-		If (cAliasQry)->TDY_FERIAD == '2'
-			aAdd(aExec[EXCECAO_DIAS], aAux)
-		Else			
-			aAdd(aExec[EXCECAO_FERIADOS], aAux)
+	TDW->(DbSetOrder(1))//TDW_FILIAL+TDW_COD
+	If TDW->(MsSeek(xFilial("TDW")+cEscala))
+		oModel := FwLoadModel("TECA580")
+		
+		If (oModel:Activate())
+			aExec[EXCECAO_DIAS] := {}
+			aExec[EXCECAO_FERIADOS] := {}
+			
+			For nI:=1 To oModel:GetModel("TDXDETAIL"):Length()
+				oModel:GetModel("TDXDETAIL"):GoLine(nI)
+				
+				//Exceções dias da semana
+				For nY:=1 To oModel:GetModel("STDYDETAIL"):Length()
+					oModel:GetModel("STDYDETAIL"):GoLine(nY)
+					
+					aAux := Array(EXCECAO_ITEM_ELEMENTOS)
+					aAux[EXCECAO_ITEM_TURNO]			:= oModel:GetModel("TDXDETAIL"):GetValue("TDX_TURNO")
+					aAux[EXCECAO_ITEM_SEQUENCIA]	:= oModel:GetModel("TDXDETAIL"):GetValue("TDX_SEQTUR")
+					aAux[EXCECAO_ITEM_DIASEM]		:= oModel:GetModel("STDYDETAIL"):GetValue("TDY_DIASEM")
+					aAux[EXCECAO_ITEM_ENTRA1]		:= oModel:GetModel("STDYDETAIL"):GetValue("TDY_ENTRA1")
+					aAux[EXCECAO_ITEM_SAIDA1]		:= oModel:GetModel("STDYDETAIL"):GetValue("TDY_SAIDA1")
+					aAux[EXCECAO_ITEM_ENTRA2]		:= oModel:GetModel("STDYDETAIL"):GetValue("TDY_ENTRA2")
+					aAux[EXCECAO_ITEM_SAIDA2]		:= oModel:GetModel("STDYDETAIL"):GetValue("TDY_SAIDA2")
+					aAux[EXCECAO_ITEM_ENTRA3]		:= oModel:GetModel("STDYDETAIL"):GetValue("TDY_ENTRA3")
+					aAux[EXCECAO_ITEM_SAIDA3]		:= oModel:GetModel("STDYDETAIL"):GetValue("TDY_SAIDA3")
+					aAux[EXCECAO_ITEM_ENTRA4]		:= oModel:GetModel("STDYDETAIL"):GetValue("TDY_ENTRA4")
+					aAux[EXCECAO_ITEM_SAIDA4]		:= oModel:GetModel("STDYDETAIL"):GetValue("TDY_SAIDA4")
+					aAux[EXCECAO_ITEM_TIPO]			:= oModel:GetModel("STDYDETAIL"):GetValue("TDY_HREXT")
+					aAux[EXCECAO_ITEM_TROCASEQ]		:= oModel:GetModel("STDYDETAIL"):GetValue("TDY_TROSEQ")
+					aAux[EXCECAO_ITEM_LIM_INFERIOR] := oModel:GetModel("STDYDETAIL"):GetValue("TDY_HORMEN")
+					aAux[EXCECAO_ITEM_LIM_SUPERIOR]	:= oModel:GetModel("STDYDETAIL"):GetValue("TDY_HORMAI")
+		
+					aAdd(aExec[EXCECAO_DIAS], aAux)
+				Next nY
+				
+				//Exceções de Feriados				
+				For nY:=1 To oModel:GetModel("FTDYDETAIL"):Length()
+					oModel:GetModel("FTDYDETAIL"):GoLine(nY)
+					
+					aAux := Array(EXCECAO_ITEM_ELEMENTOS)
+					aAux[EXCECAO_ITEM_TURNO]			:= oModel:GetModel("TDXDETAIL"):GetValue("TDX_TURNO")
+					aAux[EXCECAO_ITEM_SEQUENCIA]	:= oModel:GetModel("TDXDETAIL"):GetValue("TDX_SEQTUR")
+					aAux[EXCECAO_ITEM_DIASEM]		:= oModel:GetModel("FTDYDETAIL"):GetValue("TDY_DIASEM")
+					aAux[EXCECAO_ITEM_ENTRA1]		:= oModel:GetModel("FTDYDETAIL"):GetValue("TDY_ENTRA1")
+					aAux[EXCECAO_ITEM_SAIDA1]		:= oModel:GetModel("FTDYDETAIL"):GetValue("TDY_SAIDA1")
+					aAux[EXCECAO_ITEM_ENTRA2]		:= oModel:GetModel("FTDYDETAIL"):GetValue("TDY_ENTRA2")
+					aAux[EXCECAO_ITEM_SAIDA2]		:= oModel:GetModel("FTDYDETAIL"):GetValue("TDY_SAIDA2")
+					aAux[EXCECAO_ITEM_ENTRA3]		:= oModel:GetModel("FTDYDETAIL"):GetValue("TDY_ENTRA3")
+					aAux[EXCECAO_ITEM_SAIDA3]		:= oModel:GetModel("FTDYDETAIL"):GetValue("TDY_SAIDA3")
+					aAux[EXCECAO_ITEM_ENTRA4]		:= oModel:GetModel("FTDYDETAIL"):GetValue("TDY_ENTRA4")
+					aAux[EXCECAO_ITEM_SAIDA4]		:= oModel:GetModel("FTDYDETAIL"):GetValue("TDY_SAIDA4")
+					aAux[EXCECAO_ITEM_TIPO]			:= oModel:GetModel("FTDYDETAIL"):GetValue("TDY_HREXT")
+					aAux[EXCECAO_ITEM_TROCASEQ]		:= oModel:GetModel("FTDYDETAIL"):GetValue("TDY_TROSEQ")
+					aAux[EXCECAO_ITEM_LIM_INFERIOR] := oModel:GetModel("FTDYDETAIL"):GetValue("TDY_HORMEN")
+					aAux[EXCECAO_ITEM_LIM_SUPERIOR]	:= oModel:GetModel("FTDYDETAIL"):GetValue("TDY_HORMAI")
+					
+					aAdd(aExec[EXCECAO_FERIADOS], aAux)				
+				Next nY
+				
+			Next nI
 		EndIf
-		(cAliasQry)->(dbSkip())
-	End
-	(cAliasQry)->(dbCloseArea())
-	RestArea(aArea)
+	EndIf
+	
 Return aExec
 
 
@@ -1366,38 +1286,32 @@ Recupera informações de FEriados de acordo com calendário informado
 Static Function LoadFeriad(cCalend, dDataIni, dDataFim)
 	
 	Local aFer := {}
-	Local aArea := GetArea()
-	Local cSql := ""
+	Local nI := 1		
+	Local oModel := Nil
 	Local aAux := {}
-	Local cAliasQry := ""
+		
+	AC0->(DbSetOrder(1))//AC0_FILIAL+AC0_CALEND
+	If AC0->(MsSeek(xFilial("AC0")+cCalend))
+		oModel := FwLoadModel("TECA790")
+		
+		If (oModel:Activate())
 
-	cSql += " SELECT RR0.RR0_DATA, RR0.RR0_TPEXT, RR0.RR0_TPEXTN, RR0.RR0_FIXO, RR0.RR0_DESC, RR0.RR0_MESDIA "
-	cSql += " FROM " + RetSqlName("RR0") + " RR0 "
-	cSql += " INNER JOIN " + RetSqlName("AC0") + " AC0 "
-	cSql += " ON RR0.RR0_CODCAL = AC0.AC0_CODIGO "
-	cSql += " AND AC0.AC0_FILIAL = '" + xFilial('AC0') + "' "
-	cSql += " AND AC0.D_E_L_E_T_ = ' ' "
-	cSql += " WHERE AC0.AC0_CODIGO = '" + cCalend +"' "
-	cSql += " AND RR0.RR0_FILIAL = '" + xFilial('RR0') + "' "
-	cSql += " AND RR0.D_E_L_E_T_ = ' ' "
-	cSql := ChangeQuery(cSql)
-	cAliasQry := GetNextAlias()
-	dbUseArea( .T., "TOPCONN", TCGENQRY(,,cSql),cAliasQry, .F., .T.)
-	While !(cAliasQry)->(EOF())
-
-		aAux := Array(FERIADO_ITEM_ELEMENTOS)
-		aAux[FERIADO_ITEM_DATA] := sToD((cAliasQry)->RR0_DATA)
-		aAux[FERIADO_ITEM_TP_HE] := (cAliasQry)->RR0_TPEXT
-		aAux[FERIADO_ITEM_TP_HE_NT] := (cAliasQry)->RR0_TPEXTN
-		aAux[FERIADO_ITEM_FIXO] := (cAliasQry)->RR0_FIXO
-		aAux[FERIADO_ITEM_DESC] := (cAliasQry)->RR0_DESC
-		aAux[FERIADO_MES_DIA] := (cAliasQry)->RR0_MESDIA
-		aAdd(aFer, aAux)								
-
-		(cAliasQry)->(dbSkip())
-	End
-	(cAliasQry)->(dbCloseArea())
-	RestArea(aArea)
+			For nI:=1 To oModel:GetModel("RR0DETAIL"):Length()
+				oModel:GetModel("RR0DETAIL"):GoLine(nI)
+									
+				aAux := Array(FERIADO_ITEM_ELEMENTOS)
+				aAux[FERIADO_ITEM_DATA] 		:= oModel:GetModel("RR0DETAIL"):GetValue("RR0_DATA")
+				aAux[FERIADO_ITEM_TP_HE] 	:= oModel:GetModel("RR0DETAIL"):GetValue("RR0_TPEXT")
+				aAux[FERIADO_ITEM_TP_HE_NT] := oModel:GetModel("RR0DETAIL"):GetValue("RR0_TPEXTN")
+				aAux[FERIADO_ITEM_FIXO] 		:= oModel:GetModel("RR0DETAIL"):GetValue("RR0_FIXO")
+				aAux[FERIADO_ITEM_DESC] 		:= oModel:GetModel("RR0DETAIL"):GetValue("RR0_DESC")				
+				aAux[FERIADO_MES_DIA]		:= 	oModel:GetModel("RR0DETAIL"):GetValue("RR0_MESDIA")
+				aAdd(aFer, aAux)								
+				
+			Next nI
+		EndIf
+	EndIf
+	
 Return aFer
 
 
@@ -1489,77 +1403,3 @@ If nTotalH > 0
 EndIf
 
 Return nTotalH
-
-Static Function AjustaDias(aCalend)
-Local nX
-Local nPosCalend := 0
-Local nY
-Local nPosAux := 0
-Local cPOS_SEQ
-
-For nX := 1 To LEN(aDiasNProc)
-	nPosCalend := ASCAN(aCalend, {|s| s[1] == aDiasNProc[nX][1] .AND.;
-									s[2] == aDiasNProc[nX][2] .AND.;
-									s[3] == aDiasNProc[nX][3] .AND.;
-									s[4] == aDiasNProc[nX][4] })
-	If nPosCalend > 0
-		For nY := 1 TO LEN(aCalend)
-			If !EMPTY(aCalend[nY][CALEND_POS_HORA]) .AND. aCalend[nY][CALEND_POS_TIPO_DIA] == 'S' .AND. aCalend[nY][CALEND_POS_DATA] > aCalend[nPosCalend][CALEND_POS_DATA]
-				nPosAux := nY
-				Exit
-			EndIf
-		Next nY
-		
-		If nPosAux > 0 .AND. nPosAux > 0
-			aCalend[nPosCalend][CALEND_POS_TURNO] := aCalend[nPosAux][CALEND_POS_TURNO]
-			cPOS_SEQ := aCalend[nPosAux][CALEND_POS_SEQ_TURNO]
-			aCalend[nPosCalend][CALEND_POS_TIPO_DIA] := PreviousDay(aCalend[nPosAux][CALEND_POS_DATA], aCalend[nPosAux][CALEND_POS_TURNO],@cPOS_SEQ, aCalend[nPosCalend][CALEND_POS_DATA] - aCalend[nPosAux][CALEND_POS_DATA])
-			aCalend[nPosCalend][CALEND_POS_SEQ_TURNO] := cPOS_SEQ
-		EndIf
-	EndIf
-Next nX
-
-Return
-
-Static Function PreviousDay(dDtBase, cTurno, cSeqBase, nDays)
-Local cRet := 'N'
-Local nAuxDia
-Local aSeqTno := {}
-Local cQry := GetNextAlias()
-
-If !EMPTY(dDtBase) .AND. !EMPTY(cTurno) .AND. !EMPTY(cSeqBase) .AND. nDays < 0
-	nAuxDia := DOW(dDtBase)
-	
-	BeginSQL Alias cQry
-		SELECT DISTINCT PJ_SEMANA 
-		  FROM %Table:SPJ% SPJ
-		 WHERE SPJ.PJ_FILIAL = %xFilial:SPJ%
-		   AND SPJ.%NotDel%
-		   AND SPJ.PJ_TURNO = %Exp:cTurno%
-	EndSQL
-	
-	While (cQry)->(!Eof())
-		AADD(aSeqTno, (cQry)->(PJ_SEMANA))
-		(cQry)->(DbSkip())
-	End
-	(cQry)->(DbCloseArea())
-	
-	While nDays < 0
-		If nAuxDia - 1 == 1
-			If 1 == ASCAN(aSeqTno, cSeqBase)
-				cSeqBase := aSeqTno[LEN(aSeqTno)]
-			Else
-				cSeqBase := aSeqTno[(ASCAN(aSeqTno, cSeqBase) - 1)]
-			EndIF
-			nAuxDia--
-		ElseIf nAuxDia - 1 == 0
-			nAuxDia := 7
-		Else
-			nAuxDia--
-		EndIf
-		nDays++
-	End
-	cRet := POSICIONE("SPJ",1,xFilial("SPJ") + cTurno + cSeqBase + cValToChar(nAuxDia), "PJ_TPDIA")
-EndIf
-
-Return cRet

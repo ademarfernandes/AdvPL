@@ -39,7 +39,7 @@ nTotNormas := 04
 nLenCol1   := 08
 nLenCol2   := 13
 nLenCol3   := 61
-nLenCol4   := 12
+nLenCol4   := 13
 nLenCol5   := 12
    
 aLenCol := {{"ORDEM"    ,nLenCol1,"C",STR0001},; //"Ordem"
@@ -62,17 +62,17 @@ IF COVeri("ACE") // verifica se país pertence ao acordo ace59
          //Cabeçalho
          mDet := ""
          mDet += Replicate(ENTER,12) // Linhas em branco
-         mDet += cMargem+Space(49)+aCab[2,4]+ENTER // País Importador
+         mDet += cMargem+Space(52)+aCab[2,4]+ENTER // País Importador
          mDet += Replicate(ENTER,3)
           
          // Complemento (entre os itens e as normas)
          mCompl := ""
          mCompl += Replicate (ENTER,2) // Linhas em branco entre o detalhe e o complemento
-         mCompl += cMargem+Space(82)+Alltrim(Transform(aCab[7],AvSx3("EEC_NRINVO",AV_PICTURE)))+Space(11)+aCab[8] //nr. da Invoice e data 
-         mCompl += Replicate(ENTER,7)  // Linhas em branco entre o complemento e as normas
+         mCompl += cMargem+Space(84)+Alltrim(Transform(aCab[7],AvSx3("EEC_NRINVO",AV_PICTURE)))+Space(12)+aCab[8] //nr. da Invoice e data 
+         mCompl += Replicate(ENTER,6)  // Linhas em branco entre o complemento e as normas
 
          // Rodapé
-         mRod := "" //+ ENTER //+ Replicate(ENTER,2)
+         mRod := "" + ENTER //+ Replicate(ENTER,2)
          
          //Exportador ou Produtor - Razão Social e Endereço
          mRod += cMargem + Space(13)+aCab[1][1]+Replicate(ENTER,1)
@@ -80,7 +80,7 @@ IF COVeri("ACE") // verifica se país pertence ao acordo ace59
 
          //Data por extenso
          mRod += cMargem + Space(4) + Str(Day(CtoD(aRod[5])), 2) + " DE " + AllTrim(Upper(MesExtenso(Month(CtoD(aRod[5]))))) +;
-                " DE " + Str(Year(CtoD(aRod[5])), 4)+Replicate(ENTER,3)
+                " DE " + Str(Year(CtoD(aRod[5])), 4)
         // Data no formato DD/MM/AA
         // mRod += cMargem + Space(5) + aRod[5] + Replicate(ENTER,3) // Data de Emissão do Certificado
                           
@@ -113,7 +113,6 @@ USER FUNCTION PEM73()
 Local cPictPeso  := "@E 99,999,999" + IF(EEC->EEC_DECPES > 0, "." + Replic("9",EEC->EEC_DECPES),""),;
       cPictPreco := AVSX3("EE9_PRCTOT",AV_PICTURE)
 Local cDescFam := ""
-Local cQtde,cVlrFob
 
 //Verifica se imprime a descrição da família
 If lFamilia
@@ -123,10 +122,8 @@ ENDIF
 TMP->ORDEM     := TMP->TMP_ORIGEM
 TMP->COD_NALAD := TRANSFORM(TMP->EE9_NALSH,AVSX3("EE9_NALSH",AV_PICTURE))
 TMP->DESCRICAO := cDescFam + TMP->TMP_DSCMEM
-cQtde := AllTrim(TRANSFORM(TMP->TMP_PLQTDE,cPICTPESO))
-cVlrFob := AllTrim(TRANSFORM(TMP->TMP_VALFOB,cPICTPRECO))
-TMP->PESO_QTDE := Space(nLenCol4-LEN(cQtde)) + cQtde
-TMP->VALOR_FOB := Space(nLenCol5-LEN(cVlrFob)) + cVlrFob
+TMP->PESO_QTDE := Space(4) + AllTrim(TRANSFORM(TMP->TMP_PLQTDE,cPICTPESO))
+TMP->VALOR_FOB := Space(4) + AllTrim(TRANSFORM(TMP->TMP_VALFOB,cPICTPRECO))
 
 RETURN(NIL)
 *--------------------------------------------------------------------

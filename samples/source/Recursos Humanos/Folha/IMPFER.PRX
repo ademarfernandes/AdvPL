@@ -111,7 +111,7 @@ If lAchou
 	If SRH->( RH_DIALRE1 + RH_DIALREM) > 0 
 		nDiaFeQueb := SRH->(RH_DFERIAS - Int(RH_DFERIAS) )
 		If lSomLiR
-			DaAuxF := SRH->RH_DATAFIM 
+			DaAuxF := SRH->RH_DATAFIM + If(nDiaFeQueb>0 , 1, 0 ) 
 		Else
 			DaAuxF := SRH->RH_DATAFIM -( SRH->( RH_DIALRE1 + RH_DIALREM ) ) + If(nDiaFeQueb>0 , 1, 0 ) 
 		EndIf
@@ -394,18 +394,14 @@ If lAchou
 					@ ++nLi,001 PSAY "|" + SPACE(07) + STR0144 + cBcoDesc ; @ nLi,079 PSAY "|"					//"Banco: "
 					@ ++nLi,001 PSAY "|" + SPACE(07) + STR0145 + cBcoAg + "/" + cBcoCta ; @ nLi,079 PSAY "|"	//"Agencia/Conta: "
 				EndIf
-				If cPaisLoc != "BRA"
-	                @ ++nLi,001 PSAY "|" + SPACE(16) + STR0038 ; @ nLi,079 PSAY "|"    //"Solicitamos  apresentar  a  sua  carteira  de trabalho  e"
-	                @ ++nLi,001 PSAY "|" + SPACE(07) + STR0039      //; @ nLi+23,079 PSAY "|"                        //"previdencia social ao depto pessoal para as anotacoes necessarias.
-				EndIf
+                @ ++nLi,001 PSAY "|" + SPACE(16) + STR0038 ; @ nLi,079 PSAY "|"    //"Solicitamos  apresentar  a  sua  carteira  de trabalho  e"
+                @ ++nLi,001 PSAY "|" + SPACE(07) + STR0039      //; @ nLi+23,079 PSAY "|"                        //"previdencia social ao depto pessoal para as anotacoes necessarias.
             Else
                 @ ++nLi,001 PSAY "|" + SPACE(77) + "|"
                 @ ++nLi,001 PSAY "|" + SPACE(77) + "|"
                 @ ++nLi,001 PSAY "|" + SPACE(77) + "|"
-                If cPaisLoc != "BRA"
-					@ ++nLi,001 PSAY "|" + SPACE(16) + STR0038 ; @ nLi,079 PSAY "|"    //"Solicitamos  apresentar  a  sua  carteira  de trabalho  e"
-	                @ ++nLi,001 PSAY "|" + SPACE(07) + STR0039      //; @ nLi+23,079 PSAY "|"                        //"previdencia social ao depto pessoal para as anotacoes necessarias.
-				EndIf
+                @ ++nLi,001 PSAY "|" + SPACE(16) + STR0038 ; @ nLi,079 PSAY "|"    //"Solicitamos  apresentar  a  sua  carteira  de trabalho  e"
+                @ ++nLi,001 PSAY "|" + SPACE(07) + STR0039      //; @ nLi+23,079 PSAY "|"                        //"previdencia social ao depto pessoal para as anotacoes necessarias.
             EndIF
         Else
         	@ ++nLi,001 PSAY "|" + SPACE(16) + STR0117; @ nLi,079 PSAY "|"	
@@ -880,7 +876,7 @@ If lAchou
 			@ nLi,001 PSAY "|" + SPACE(02) + STR0082 + SubStr(aInfo[3]+Space(40),1,40) + Space(23) + " |"	//"Recebi da: "
 			nLi:=nLi+1
 			fVerQuebra(@nLi)
-			@ nLi,001 PSAY "|" + SPACE(02) + STR0083 + SubStr(AllTrim(aInfo[4]) + ", " + AllTrim(aInfo[14]) + Space(40),1,40)+STR0084+SubStr(aInfo[7]+Space(8),1,8)		//"Estabelecida a "###"   -  Cep: "
+			@ nLi,001 PSAY "|" + SPACE(02) + STR0083 + SubStr(aInfo[4]+Space(30),1,30)+STR0084+SubStr(aInfo[7]+Space(8),1,8)		//"Estabelecida a "###"   -  Cep: "
 			@ nLi,079 PSAY "|"
 			nLi:=nLi+1
 			fVerQuebra(@nLi)
@@ -1048,18 +1044,14 @@ Else
 					@ ++nLi,001 PSAY "|" + SPACE(07) + STR0144 + cBcoDesc ; @ nLi,079 PSAY "|"					//"Banco: "
 					@ ++nLi,001 PSAY "|" + SPACE(07) + STR0145 + cBcoAg + "/" + cBcoCta ; @ nLi,079 PSAY "|"	//"Agencia/Conta: "
 				EndIf
-				If cPaisLoc != "BRA"
-	                @ ++nLi,001 PSAY "|" + SPACE(16) + STR0112 + SPACE(4) + "|"    //"Solicitamos  apresentar  a  sua  carteira  de trabalho  e"
-	                @ ++nLi,001 PSAY "|" + SPACE(07) + STR0113                            //"previdencia social ao depto pessoal para as anotacoes necessarias.    |"
-				EndIf
+                @ ++nLi,001 PSAY "|" + SPACE(16) + STR0112 + SPACE(4) + "|"    //"Solicitamos  apresentar  a  sua  carteira  de trabalho  e"
+                @ ++nLi,001 PSAY "|" + SPACE(07) + STR0113                            //"previdencia social ao depto pessoal para as anotacoes necessarias.    |"
             Else
                 @ ++nLi,001 PSAY "|" + SPACE(77) + "|"
                 @ ++nLi,001 PSAY "|" + SPACE(77) + "|"
                 @ ++nLi,001 PSAY "|" + SPACE(77) + "|"
-                If cPaisLoc != "BRA"
-					@ ++nLi,001 PSAY "|" + SPACE(16) + STR0112 + SPACE(4) + "|"    //"Solicitamos  apresentar  a  sua  carteira  de trabalho  e"
-	                @ ++nLi,001 PSAY "|" + SPACE(07) + STR0113                            //"previdencia social ao depto pessoal para as anotacoes necessarias.    |"
-				EndIf
+                @ ++nLi,001 PSAY "|" + SPACE(16) + STR0112 + SPACE(4) + "|"    //"Solicitamos  apresentar  a  sua  carteira  de trabalho  e"
+                @ ++nLi,001 PSAY "|" + SPACE(07) + STR0113                            //"previdencia social ao depto pessoal para as anotacoes necessarias.    |"
             EndIF
 			@ ++nLi,001 PSAY "|" + SPACE(77) + "|"
 			@ ++nLi,001 PSAY "|" + SPACE(77) + "|"

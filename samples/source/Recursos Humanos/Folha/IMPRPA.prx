@@ -49,11 +49,11 @@ User Function ImpRpa()
 	CCCDE,CCCATE,CMATDE,CMATATE,CNOMEDE,CNOMEATE,CSITUACAO,CCATEGORIA,CNUMRPA,DDATAREF,LATUAL,;
 	CARQANT,CARQNEW,LIGUAL,CSAVSCR1,CSAVCUR1,CSAVROW1,;
 	CSAVCOL1,CSAVCOR1,CINDRC,CRCNTX,NPOSANOMES,CDATAANT,;
-	CEXCLUI,CINICIO,CFIM,CFILIALANT,CCCANT,AREGS,;
+	CEXCLUI,CINICIO,CFIM,CFILIALANT,CCCANT,CNUMANT,;
 	CFILMAT,CDESC_FIL,CDESC_CC,CDESC_CGC,CLOCAL_FIL,AINFO,;
 	ACODFOL,NVALORAUT,NINSSAUT,NIRRFAUT,NOUTVENC,NOUTDESC,;
 	NTOTVENC,NTOTDESC,NLIQUIDO,NOUTVEN,CQUERY,;
-	AIMPRPA,NCOLUNAS,CRET1,CRET2,CEXTENSO,NPOSRPA
+	AIMPRPA,NCOLUNAS,CRET1,CRET2,CEXTENSO,NPOSRPA,AREGS
 	
 	Private lFase4  := (cPaisLoc $ "ANG|ARG|COL|PTG|VEN")
 	Private cMes	:= ""
@@ -135,7 +135,6 @@ Static Function fIncRpa()
 	Local cAliasAux		:= "SRC"
 	Local cPrefixo		:= "RC_"
 	Local cAcessaVLD	:= ""
-	Local cImpRPA       := ""
 	
 	/*
 	здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
@@ -148,19 +147,6 @@ Static Function fIncRpa()
 	Ё Verifica as Perguntas Selecionadas nos Parametros            Ё
 	юдддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды*/
 	Pergunte(cPerg,.F.)
-
-	DbSelectArea("RCA")
-	DbSetOrder(1)
-	If RCA->( MsSeek( xFilial("RCA") + "P_NSEQRPA" ) )
-		cImpRPA := StrZero( Val(RCA->RCA_CONTEU), 10 )
-	Else
-		SetMnemonicos(NIL,NIL,.T.)
-		If RCA->( MsSeek( xFilial("RCA") + "P_NSEQRPA" ) )
-			cImpRPA := StrZero( Val(RCA->RCA_CONTEU) , 10 )
-		Else
-			cImpRPA := MV_PAR15
-		EndIf
-	EndIf
 	
 	/*
 	здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
@@ -217,7 +203,7 @@ Static Function fIncRpa()
 	cNomeAte	:= MV_PAR12
 	cSituacao	:= MV_PAR13
 	cCategoria	:= MV_PAR14
-	cNumRpa		:= StrZero( Max( Val(MV_PAR15) , Val(cImpRPA) ) , 10 )
+	cNumRpa		:= MV_PAR15
 	cDeptoDe	:= mv_par16
 	cDeptoAte	:= mv_par17
 	
@@ -288,6 +274,7 @@ Static Function fIncRpa()
 	юдддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды*/
 	cFilialAnt	:= Space(FWGETTAMFILIAL)
 	cCcAnt		:= Space(GetSx3Cache("RA_CC", "X3_TAMANHO"))
+	cNumAnt		:= cNumRpa
 	cFilMat		:= ""
 	cDesc_Fil	:= ""
 	cDesc_Cc	:= ""
@@ -525,8 +512,13 @@ Static Function fIncRpa()
 			Loop
 		EndIF
 		
-		//Numeracao do Recibo
-		cNumRpa := StrZero( Val(cNumRpa) + 1 , 10 )
+		/*
+		здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
+		Ё Numeracao do Recibo                                          Ё
+		юдддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды*/
+		IF cNumAnt != cNumRpa
+			cNumRpa := StrZero( Val(cNumRpa) + 1 , 10 )
+		EndIF
 		
 		/*
 		здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
@@ -538,20 +530,22 @@ Static Function fIncRpa()
 		здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
 		Ё Proximo Registro                                             Ё
 		юдддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды*/
-		DbSelectArea("SRA")
-		DbSkip()
+		dbSelectArea("SRA")
+		dbSkip()
+		cNumAnt := ""
 	Enddo
 	
-	//Grava o Зltimo nЗmero impresso no mnemТnico
-	DbSelectArea("RCA")
-	DbSetOrder(1)
-	If RCA->( MsSeek( xFilial("RCA") + "P_NSEQRPA" ) )
-		RecLock("RCA",.F.)
-			RCA->RCA_CONTEU := cNumRpa
-		RCA->( MsUnlock() )
-	EndIf
-
-	RCA->( DbCloseArea() )
+	/*
+	здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
+	Ё Grava o Ultimo Numero Impresso no SX1                        Ё
+	юдддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды*/
+	dbSelectArea( "SX1" )
+	dbSetOrder(1)
+	IF dbSeek( cPerg + "15" )	//-MV_PAR15
+		RecLock("SX1",.F.,.T.)
+		SX1->X1_CNT01 := cNumRpa
+		MsUnlock()
+	EndIF
 	
 	/*
 	здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
@@ -813,7 +807,7 @@ Static Function fImpRPA()
 			здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
 			Ё Carrega o Endereco do Funcionario                            Ё
 			юдддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды*/
-			aImpRpa[nPosRpa] := Stuff( aImpRpa[nPosRpa], 03 , Len(AllTrim(SRA->RA_ENDEREC) + ", " + AllTrim(SRA->RA_NUMENDE)) , AllTrim(SRA->RA_ENDEREC) + ", " + AllTrim(SRA->RA_NUMENDE) )
+			aImpRpa[nPosRpa] := Stuff( aImpRpa[nPosRpa], 03 , Len(AllTrim(SRA->RA_ENDEREC)) , AllTrim(SRA->RA_ENDEREC) + ", " + AllTrim(SRA->RA_NUMENDE) )
 			/*
 			здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
 			Ё Carrega o Valor do INSS de Autonomos                         Ё

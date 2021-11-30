@@ -278,12 +278,7 @@ Static Function fCabecalho()
 	oPrint:say (605,220 ,"12 "+STR0011, oFont09)  							//"|03 Endereco   : "
 	oPrint:say (605,1820,"13 "+STR0014, oFont09)	  						 	//"|04 Bairro : "
 	
-	If !Empty(SRA->RA_NUMENDE)
-		oPrint:say (650,235 ,Alltrim(SRA->RA_ENDEREC)+', '+SRA->RA_NUMENDE, oFont09) // "|03 Endereco + N. Endereço   : "
-	Else
-		oPrint:say (650,235 ,SRA->RA_ENDEREC, oFont09)				 	  		//"|03 Endereco   : "
-	EndIf
-	
+	oPrint:say (650,235 ,SRA->RA_ENDEREC, oFont09)				 	  		//"|03 Endereco   : "
 	If cPaisLoc <> "EQU"
 		oPrint:say (650,920 ,SRA->RA_COMPLEM, oFont09)				   	 	//"|03 Complemento
 	Endif
@@ -600,6 +595,9 @@ Return
 Obtem o penultimo salario do funcionario antes da demissao.
 @author Mauricio MR
 @since 16/02/11
+@param dAdmissao, date, Data de admissão do funcionário
+@param dDemissao, date, Data de demissão do funcionário
+@param cVerbas, characters, Verbas que serão incorporadas ao salário
 @param cVerbSal, characters, Código da verba de salário
 /*/
 Static Function PenunSal(dAdmissao, dDemissao, cVerbas, cVerbSal)

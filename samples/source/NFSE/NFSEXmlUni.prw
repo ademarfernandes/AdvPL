@@ -1,6 +1,5 @@
 #include "protheus.ch" 
 #include "tbiconn.ch"
-#include "fwlibversion.ch"
 
 //-----------------------------------------------------------------------
 /*/{Protheus.doc} nfseXMLEnv
@@ -108,10 +107,7 @@ User function nfseXMLUni( cCodMun, cTipo, dDtEmiss, cSerie, cNota, cClieFor, cLo
 	Local lCrgTrib  := GetNewPar("MV_CRGTRIB",.F.)
 	Local cNatPCC	  := GetNewPar("MV_1DUPNAT","SA1->A1_NATUREZ") //-- Natureza considerada para retencao de PIS, COF, CSLL 
 	Local cNatBusc   := ""
-	Local cMsgSX5	:= ""
-	Local cLibVersion := allTrim( FwLibVersion() )
 
-	Local aRetSX5	:= {}
 	Local aNota     := {}
 	Local aDupl     := {}
 	Local aDest     := {}
@@ -202,18 +198,6 @@ User function nfseXMLUni( cCodMun, cTipo, dDtEmiss, cSerie, cNota, cClieFor, cLo
 	aadd(aUF,{"SE","28"})
 	aadd(aUF,{"BA","29"})
 	aadd(aUF,{"EX","99"})
-
-	//-----------------------------------------------------------------------------------
-	// - Verifica a necessidade de atualizacao de LIB para utilizar o comando FWGetSX5
-	//-----------------------------------------------------------------------------------
-	if( cLibVersion < "20170511" )
-		cMsgSX5 := "Para obter as descrições corretas da tabela SX5, por favor, atualize a LIB." + chr( 13 ) + chr( 10 )
-		cMsgSX5 += "Versão atual: " + cLibVersion + chr( 13 ) + chr( 10 )
-		cMsgSX5 += "Versão mínima necessária: 20170511"
-		
-		msgAlert( cMsgSX5,"Necessário atualização de LIB" )
-		cMsgSX5 := ""
-	EndIf
 	
 	If cTipo == "1" .And. Empty(cMotCancela)
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -224,7 +208,7 @@ User function nfseXMLUni( cCodMun, cTipo, dDtEmiss, cSerie, cNota, cClieFor, cLo
 		DbGoTop()
 		If DbSeek(xFilial("SF2")+cNota+cSerie+cClieFor+cLoja)
 
-			aadd(aNota,IIF(cCodMun == "3526902","RPSL",SF2->F2_SERIE) )
+			aadd(aNota,SF2->F2_SERIE)
 			aadd(aNota,IIF(Len(SF2->F2_DOC)==6,"000","")+SF2->F2_DOC)
 			aadd(aNota,SF2->F2_EMISSAO)
 			aadd(aNota,cTipo)
@@ -864,33 +848,22 @@ User function nfseXMLUni( cCodMun, cTipo, dDtEmiss, cSerie, cNota, cClieFor, cLo
 					EndIf
 				EndIf
 
-				//---------------------------------------
-				// - Posiciona no Cadastro de Produtos
-				//---------------------------------------
-				dbSelectArea( "SB1" )
-				dbSetOrder( 1 )	//B1_FILIAL + B1_COD
-				DbSeek( xFilial( "SB1" ) + ( cAliasSD2 )->D2_COD )
+				//-- Pega a descricao da SX5 tabela 60
+				dbSelectArea("SB1")
+				dbSetOrder(1) //B1_FILIAL+B1_COD
+				DbSeek(xFilial("SB1")+(cAliasSD2)->D2_COD)
 
-				//---------------------------------------------------------------------------------
-				// - Obtem a descricao da tabela SX5
-				// - Tabela 60 - Conforme Item da Lista de Servico informado no Cad. de Produtos
-				//---------------------------------------------------------------------------------
-				dbSelectArea( "SX5" )
-				dbSetOrder( 1 )
-				aRetSX5 := FWGetSX5( '60',RetFldProd( SB1->B1_COD,"B1_CODISS" ) )
-
-				if( !empty( aRetSX5 ) )
-					cMsgSX5 := iif( FindFunction( 'CleanSpecChar' ),CleanSpecChar( aRetSX5[ 1 ][ 4 ] ),aRetSX5[ 1 ][ 4 ] )
-					cMsgSX5 := allTrim( subStr( cMsgSX5,1,55 ) )
-				endIf
-
-				if( nCont == 1 )
-					if( !lNFeDesc )
-						cNatOper	+= cMsgSX5
-					else
-						cDescrNFSe	:= cMsgSX5
-					endIf
-				endIf
+				dbSelectArea("SX5")
+				dbSetOrder(1) //X5_FILIAL+X5_TABELA+X5_CHAVE
+				If dbSeek(xFilial("SX5")+"60"+RetFldProd(SB1->B1_COD,"B1_CODISS"))
+					If !lNFeDesc
+						If nCont == 1
+							cNatOper   += If(FindFunction('CleanSpecChar'),CleanSpecChar(AllTrim(SubStr(SX5->X5_DESCRI,1,55))),AllTrim(SubStr(SX5->X5_DESCRI,1,55)))
+						EndIf
+					ElseIf nCont == 1
+							cDescrNFSe := If(FindFunction('CleanSpecChar'),CleanSpecChar(AllTrim(SubStr(SX5->X5_DESCRI,1,55))),AllTrim(SubStr(SX5->X5_DESCRI,1,55)))
+					EndIf
+				EndIf
     		
 				If SF4->(FieldPos("F4_CFPS")) > 0
 					cCFPS:=SF4->F4_CFPS
@@ -1872,12 +1845,8 @@ Static Function tomador( aDest )
 		EndIf
 		//-- Situacao Especial do Tomador: 0-Outros;1-SUS;2-Orgao Poder Executivo;3-Bancos;4-Comercio/Industria;5-Poder Legislativo/Executivo - Obrigat.
 		cString += "<csituacaoesptom>0</csituacaoesptom>" //Obrigat.
-		//-- Identificacao de 1-Sim/2-Nao - Nao Obrigat. 
-		If allTrim( upper( aDest[ 9 ] ) ) == "EX"
-			cString += "<ctomnaoidentificado>1</ctomnaoidentificado>"
-		Else
-			cString += "<ctomnaoidentificado>2</ctomnaoidentificado>"
-		Endif
+		//-- Identificacao de 1-Sim/2-Nao - Nao Obrigat.
+		cString += "<ctomnaoidentificado>2</ctomnaoidentificado>" //Nao Obrigat.
 		//-- tratativa para geração da tag de Inscricao Estadual no XML
 		If !empty(aDest[14]) .and. aDest[14] <> 'ISENTO'
 		   cString += "<cietom>" + alltrim(aDest[14]) + "</cietom>"

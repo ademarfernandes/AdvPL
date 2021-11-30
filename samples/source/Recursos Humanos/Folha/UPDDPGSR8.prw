@@ -62,22 +62,20 @@ Função que executa o processo de atualização da base corrigindo os dias pagos
 @version 1.0
 /*/
 Static Function fUpdDPgSR8(lEnd)
-	Local cErro		:= ""
 	Local lBackup   := MsgYesNo(STR0008) //"O backup da base já foi realizado?"
 
     If lBackup
 	    Begin Transaction			
 			cQry := " UPDATE " + Retsqlname("SR8")+ " SET R8_DPAGOS = CASE WHEN R8_DIASEMP < R8_DURACAO THEN R8_DIASEMP"
-			cQry += 												" ELSE R8_DURACAO END, "
-			cQry += 									  "R8_SDPAGAR = CASE WHEN R8_SDPAGAR > R8_DPAGAR THEN 0 ELSE R8_SDPAGAR END "
-			cQry += " WHERE D_E_L_E_T_='' AND ( R8_DPAGOS > R8_DURACAO OR R8_DPAGOS > R8_DIASEMP OR R8_DPAGOS < 0 ) "
+			cQry += 												" ELSE R8_DURACAO END "
+			cQry += " WHERE D_E_L_E_T_='' AND R8_DPAGOS > R8_DURACAO OR R8_DPAGOS > R8_DIASEMP"
 			nRet := TCSQLEXEC(cQry)
 			If nRet != 0
-				cErro += TCSqlError()
+				cErro +=  TCSqlError()
 				DisarmTransaction()
 			EndIf
 		End Transaction
-		MsgInfo(STR0010 + If(!Empty(cErro), " - " + cErro, ""))
+		MsgInfo(STR0010)
     Else
         MsgInfo(STR0009) //"Realize o backup e execute a rotina novamente."
     EndIf

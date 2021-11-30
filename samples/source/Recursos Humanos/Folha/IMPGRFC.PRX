@@ -66,10 +66,8 @@ User Function IMPGRFC()
 Local nX		:= 0
 Local lDivAdi	:= ( Len(aCodFol) >= 1721 ) .And. !Empty(aCodFol[1680,1])
 Local cPdAv 	:= aCodFol[115,1] + "*" + iif(lDivAdi,aCodFol[1713,1] + "*" + aCodFol[1707,1] + "*" + aCodFol[1695,1] + "*" + aCodFol[1683,1] + "*" +aCodFol[1685,1] + "*" + aCodFol[1697,1] + "*" + aCodFol[1709,1] + "*"+ aCodFol[1715,1] + "*"+ aCodFol[1719,1] + "*"+ aCodFol[1721,1],"") 
-Local cPdMedFA 	:= aCodFol[252,1] + "*" + iif(lDivAdi,aCodFol[1688,1] + "*" + aCodFol[1700,1] + "*" + aCodFol[1682,1] + "*" + aCodFol[1694,1],"")
+Local cPdMedFA 	:= aCodFol[252,1] + "*" + iif(lDivAdi,aCodFol[1688,1] + "*" + aCodFol[1700,1],"")
 Local cPdMed13A := aCodFol[253,1] + "*" + iif(lDivAdi,aCodFol[1691,1] + "*" + aCodFol[1703,1],"")
-
-Private aPdv := {}
 
 //DECLARACAO DE VARIAVEIS UTILIZADAS NO PROGRAMA ATRAVES DA FUNCAO
 //SETPRVT, QUE CRIARA SOMENTE AS VARIAVEIS DEFINIDAS PELO USUARIO,
@@ -230,10 +228,7 @@ If dbSeek(cFilSRR + SRA->RA_MAT + 'R' + DtoS(SRG->RG_DTGERAR))
 
 	While ! Eof() .And. SRR->RR_FILIAL+SRR->RR_MAT+SRR->RR_TIPO3 == ;
 		cFilSrr+SRA->RA_MAT+"R" .And. SRR->RR_DATA == SRG->RG_DTGERAR 
-		
-		// Adiciona verba no aPd
-		SRR->(fMatriz(RR_PD, RR_VALOR, RR_HORAS, "", RR_CC, RR_TIPO1, RR_TIPO2, Nil, Nil, RR_DATA, Nil, RR_SEQ ))
-		
+
 		//FGTS MES ANTERIOR
 		If SRR->RR_PD == aCodFol[117,1] 
 			nFgtsMAn := SRR->RR_VALOR
@@ -312,11 +307,6 @@ If dbSeek(cFilSRR + SRA->RA_MAT + 'R' + DtoS(SRG->RG_DTGERAR))
        	dbSelectArea("SRR")
 		dbSkip()
 	Enddo
-	
-	If nRemA13 == 0
-		fCfgts13(aCodfol, @nRemA13, "F", , "R", )
-	EndIf
-	
 Endif
 
 //EFETUA O CALCULO DA DIFERENCA ENTRE A COMPLEMENTAR CALCULADA COM A ANTERIOR(COMPL.OU RESC)
@@ -324,7 +314,7 @@ Endif
 If cTipoRes ==2 
 	aValResc	:= {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}										//Array com  os valores da Rescisao/ compl. anterior 
 	//-- Carrega valores da resc/compl imediatamente anterior 
-	fCarResc(@aValResc,aDtResc,cPdAv,cPdMedFA,cPdMed13A)	
+	fCarResc(@aValResc,aDtResc)	
 	If lMesmoMes .and. !lDissidio
 		fAbateResc()
 	Endif	

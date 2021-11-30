@@ -83,8 +83,8 @@ DEFINE SECTION oSection1 OF oReport TITLE  oemtoAnsi(STR0040) TABLES "TRA","RA1"
 	DEFINE CELL NAME "CALEND" 	OF oSection1 TITLE OemToAnsi(STR0032)	SIZE 06 BLOCK{||cCalend}	//Calendario do Curso
 	DEFINE CELL NAME "DESCCAL"	OF oSection1 TITLE "-"					SIZE 20 BLOCK{||cDescCal} CELL BREAK	//Descr. Calendario
 	DEFINE CELL NAME "TURMA" 	OF oSection1 TITLE OemToAnsi(STR0033)	SIZE 06 BLOCK{||cTurma}		//Turma
-	DEFINE CELL NAME "DATAIN"	OF oSection1 TITLE OemToAnsi(STR0029)	SIZE 10 BLOCK{||DTOC(dDataIni)}//Periodo: Data Inicio do Curso
-	DEFINE CELL NAME "DATAFI" 	OF oSection1 TITLE "-"					SIZE 10 BLOCK{||DTOC(dDataFim)}//Periodo: Data Final do Curso
+	DEFINE CELL NAME "DATAIN"	OF oSection1 TITLE OemToAnsi(STR0029)	SIZE 10 BLOCK{||dDataIni}//Periodo: Data Inicio do Curso
+	DEFINE CELL NAME "DATAFI" 	OF oSection1 TITLE "-"					SIZE 10 BLOCK{||dDataFim}//Periodo: Data Final do Curso
 	
 	//Posicionamenro das tabelas
 	TRPosition():New(oSection1,"RA1",1,{|| xfilial("RA1",TRA->TR_FILIAL)+TRA->TR_CURSO},.T.)

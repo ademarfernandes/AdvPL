@@ -92,10 +92,6 @@ LOCAL oDLG,oBTNOK,oBTNCANCEL,I,;
       bOK     := {||nOpc:=1,oDlg:End()},;
       bCANCEL := {||nOpc:=0,oDlg:End()},;
       nOPC    := 0
-Local aIensComplemtar:= {}
-Local aNFsGeradas:= {}, cNFsGeradas:= "", cNFsEstorn := ""
-Local nCont:= 0, nCont2:= 0, cChavPedVen
-
 //PRIVATE aCab,aReg,aItens,;
 Private lEstEmb     := .f., lEstDes  := .f., lEstorna := .f.,;
         cTIPOOPC    := STR(nP_OPC-1,1,0),;
@@ -132,41 +128,35 @@ BEGIN SEQUENCE
    EEM->(dbSetOrder(1))
    EE7->(dbSetOrder(1))
    LOADGETS()
-   nColSayGets := 115
-   DEFINE MSDIALOG oDLG TITLE cTITULO FROM 0,0 TO 300,700 OF oMainWnd PIXEL
-      
-      oPanel:= TPanel():New(0, 0, "", oDlg,, .F., .F.,,, (oDlg:nRight-oDlg:nLeft), (oDlg:nBottom-oDlg:nTop))
-      
-      @ 05,02+nColSayGets TO 100,123+nColSayGets PIXEL of oPanel
+   DEFINE MSDIALOG oDLG TITLE cTITULO FROM 0,0 TO 255,240 OF oMainWnd PIXEL
+      @ 05,02 TO 100,110 PIXEL
       *    
-      @ 15,05+nColSayGets SAY AVSX3("EEC_PREEMB",AV_TITULO) PIXEL of oPanel
-      @ 15,50+nColSayGets MSGET EEC->EEC_PREEMB PICTURE AVSX3("EEC_PREEMB",AV_PICTURE) WHEN(.F.) SIZE /*53*/70,08 PIXEL of oPanel
+      @ 15,05 SAY AVSX3("EEC_PREEMB",AV_TITULO) PIXEL
+      @ 15,50 MSGET EEC->EEC_PREEMB PICTURE AVSX3("EEC_PREEMB",AV_PICTURE) WHEN(.F.) SIZE 53,08 PIXEL
       *
-      @ 26,05+nColSayGets SAY AVSX3("EEC_DTEMBA",AV_TITULO) PIXEL of oPanel
-      @ 26,50+nColSayGets MSGET EEC->EEC_DTEMBA PICTURE AVSX3("EEC_DTEMBA",AV_PICTURE) WHEN(.F.) SIZE 30,08 PIXEL of oPanel
+      @ 26,05 SAY AVSX3("EEC_DTEMBA",AV_TITULO) PIXEL
+      @ 26,50 MSGET EEC->EEC_DTEMBA PICTURE AVSX3("EEC_DTEMBA",AV_PICTURE) WHEN(.F.) SIZE 30,08 PIXEL
       *
-      @ 37,05+nColSayGets SAY AVSX3("EEC_SEGPRE",AV_TITULO) PIXEL of oPanel
-      @ 37,50+nColSayGets MSGET EEC->EEC_SEGPRE PICTURE AVSX3("EEC_SEGPRE",AV_PICTURE) WHEN(.F.) SIZE 50,08 PIXEL of oPanel
+      @ 37,05 SAY AVSX3("EEC_SEGPRE",AV_TITULO) PIXEL
+      @ 37,50 MSGET EEC->EEC_SEGPRE PICTURE AVSX3("EEC_SEGPRE",AV_PICTURE) WHEN(.F.) SIZE 50,08 PIXEL
       *
-      @ 48,05+nColSayGets SAY AVSX3("EEC_FRPREV",AV_TITULO) PIXEL of oPanel
-      @ 48,50+nColSayGets MSGET EEC->EEC_FRPREV PICTURE AVSX3("EEC_FRPREV",AV_PICTURE) WHEN(.F.) SIZE 50,08 PIXEL of oPanel
+      @ 48,05 SAY AVSX3("EEC_FRPREV",AV_TITULO) PIXEL
+      @ 48,50 MSGET EEC->EEC_FRPREV PICTURE AVSX3("EEC_FRPREV",AV_PICTURE) WHEN(.F.) SIZE 50,08 PIXEL
       *
-      @ 59,05+nColSayGets SAY AVSX3("EEC_FRPCOM",AV_TITULO) PIXEL of oPanel
-      @ 59,50+nColSayGets MSGET EEC->EEC_FRPCOM PICTURE AVSX3("EEC_FRPCOM",AV_PICTURE) WHEN(.F.) SIZE 50,08 PIXEL of oPanel
+      @ 59,05 SAY AVSX3("EEC_FRPCOM",AV_TITULO) PIXEL
+      @ 59,50 MSGET EEC->EEC_FRPCOM PICTURE AVSX3("EEC_FRPCOM",AV_PICTURE) WHEN(.F.) SIZE 50,08 PIXEL
       *
-      @ 70,05+nColSayGets SAY AVSX3("EEC_DESPIN",AV_TITULO) PIXEL of oPanel
-      @ 70,50+nColSayGets MSGET EEC->EEC_DESPIN PICTURE AVSX3("EEC_DESPIN",AV_PICTURE) WHEN(.F.) SIZE 50,08 PIXEL of oPanel
+      @ 70,05 SAY AVSX3("EEC_DESPIN",AV_TITULO) PIXEL
+      @ 70,50 MSGET EEC->EEC_DESPIN PICTURE AVSX3("EEC_DESPIN",AV_PICTURE) WHEN(.F.) SIZE 50,08 PIXEL
       *
       // @ 81,05 SAY AVSX3("EEC_DESCON",AV_TITULO) PIXEL  // By JPP - 07/07/2005 - 15:55
       // @ 81,50 MSGET EEC->EEC_DESCON PICTURE AVSX3("EEC_DESCON",AV_PICTURE) WHEN(.F.) SIZE 50,08 PIXEL
       *
-      @ 103,05+nColSayGets SAY cMSGCONF PIXEL of oPanel
-      //DEFINE SBUTTON oBtnOk     FROM 113,040 TYPE 1 ACTION Eval(bOk)     ENABLE  of oPanel//OF oDlg
-      //DEFINE SBUTTON oBtnCancel FROM 113,080 TYPE 2 ACTION Eval(bCancel) ENABLE  of oPanel//OF oDlg
+      @ 103,05 SAY cMSGCONF PIXEL
+      DEFINE SBUTTON oBtnOk     FROM 113,040 TYPE 1 ACTION Eval(bOk)     ENABLE OF oDlg
+      DEFINE SBUTTON oBtnCancel FROM 113,080 TYPE 2 ACTION Eval(bCancel) ENABLE OF oDlg
       *
-      oPanel:Align:= CONTROL_ALIGN_ALLCLIENT
-
-   ACTIVATE MSDIALOG oDlg ON INIT EnchoiceBar(oDlg,bOk,bCancel,,)  CENTERED
+   ACTIVATE MSDIALOG oDlg CENTERED
    IF nOPC = 0
       BREAK
    ENDIF
@@ -189,8 +179,7 @@ BEGIN SEQUENCE
       endif
       IF lEstorna
          SD2->(dbSetOrder(8))
-         cChavPedVen := xFilial("SD2") + AvKey(cPedFat,"D2_PEDIDO")         
-         Do While SD2->(dbSeek(cChavPedVen)) 
+         IF SD2->(dbSeek(xFilial()+cPedFat))
             aDados := {}
             aAdd(aDados,{"EEM_TIPOCA","N"            ,nil}) // Nota Fiscal (obrigatorio)
             aAdd(aDados,{"EEM_PREEMB",EEC->EEC_PREEMB,nil}) // Nro.do Embarque (obrigatorio)
@@ -202,42 +191,32 @@ BEGIN SEQUENCE
             aAdd(aCab,{"F2_DOC"  ,SD2->D2_DOC  ,nil})
             aAdd(aCab,{"F2_SERIE",SD2->D2_SERIE,nil})
             Mata520(aCab)
-            cNFsEstorn += "Nota: "+ SD2->D2_DOC +" Série:"+ SD2->D2_SERIE + Chr(13) + Chr(10)
-         EndDo
+         Endif
       Endif
       MsAguarde(bAction,cTitle)
       IF ! lMSErroAuto .AND. ! lEstorna
-
-         aIensComplemtar:= AgrupaNFs()
-
          cSerieNF := EasyGParam("MV_EECSERI")
+         // by CAF 06/03/2003 IncNota(SC5->C5_NUM,cSerieNF,EEC->EEC_PREEMB)
+         IncNota(aCAB[1,2],cSerieNF,EEC->EEC_PREEMB)         
+         // LCS - 20/09/2002 - SEEK NO SD2 E SF2
+         SD2->(DBSETORDER(8))
+         SD2->(DBSEEK(XFILIAL("SD2")+AVKEY(cPEDFAT,"D2_PEDIDO")))
          SF2->(DBSETORDER(1))
-         For nCont:= 1 to Len(aIensComplemtar)
-
-            aNFsGeradas:= {}
-            EECIncNFC(aCAB[1,2],cSerieNF,EEC->EEC_PREEMB, @aNFsGeradas, aIensComplemtar[nCont][2])         
-
-            For nCont2:= 1 to Len(aNFsGeradas)
-               SF2->(DBSEEK(XFILIAL("SF2") + AVKEY(aNFsGeradas[nCont2][2], "F2_DOC") + AVKEY(aNFsGeradas[nCont2][1], "F2_SERIE")))
-               aDados := {}
-               aAdd(aDados,{"EEM_TIPOCA","N"            ,nil}) // Nota Fiscal (obrigatorio)
-               aAdd(aDados,{"EEM_PREEMB",EEC->EEC_PREEMB,nil}) // Nro.do Embarque (obrigatorio)
-               aAdd(aDados,{"EEM_TIPONF","2"            ,nil}) // Tipo de Nota 2-Complementar (obrigatorio)
-               aAdd(aDados,{"EEM_NRNF"  ,SF2->F2_DOC    ,nil}) // (obrigatorio)
-               aAdd(aDados,{"EEM_SERIE" ,SF2->F2_SERIE  ,nil})
-               aAdd(aDados,{"EEM_DTNF"  ,SF2->F2_EMISSAO,nil})
-               aAdd(aDados,{"EEM_VLNF"  ,SF2->F2_VALBRUT,nil}) // (obrigatorio)
-               aAdd(aDados,{"EEM_VLMERC",SF2->F2_VALMERC,nil}) // (obrigatorio)
-               aAdd(aDados,{"EEM_VLFRET",SF2->F2_FRETE  ,nil})
-               aAdd(aDados,{"EEM_VLSEGU",SF2->F2_SEGURO ,nil})
-               aAdd(aDados,{"EEM_OUTROS",SF2->F2_DESPESA,nil})
-               If EasyEntryPoint("EECFATNF")
-                  ExecBlock("EECFATNF",.F.,.F.,{aDados,3})
-               EndIf
-               cNFsGeradas += aNFsGeradas[nCont2][2] + Chr(13) + Chr(10)
-            Next
-         Next
-         MsgInfo(STR0008 + Chr(13) + Chr(10) + cNFsGeradas, STR0009) //"Número da Nota Fiscal de Complemento de Preço: "###"Aviso"
+         SF2->(DBSEEK(XFILIAL("SF2")+AVKEY(SD2->D2_DOC,"F2_DOC")+AVKEY(SD2->D2_SERIE,"F2_SERIE")))
+         aDados := {}
+         aAdd(aDados,{"EEM_TIPOCA","N"            ,nil}) // Nota Fiscal (obrigatorio)
+         aAdd(aDados,{"EEM_PREEMB",EEC->EEC_PREEMB,nil}) // Nro.do Embarque (obrigatorio)
+         aAdd(aDados,{"EEM_TIPONF","2"            ,nil}) // Tipo de Nota 2-Complementar (obrigatorio)
+         aAdd(aDados,{"EEM_NRNF"  ,SF2->F2_DOC    ,nil}) // (obrigatorio)
+         aAdd(aDados,{"EEM_SERIE" ,SF2->F2_SERIE  ,nil})
+         aAdd(aDados,{"EEM_DTNF"  ,SF2->F2_EMISSAO,nil})
+         aAdd(aDados,{"EEM_VLNF"  ,SF2->F2_VALBRUT,nil}) // (obrigatorio)
+         aAdd(aDados,{"EEM_VLMERC",SF2->F2_VALMERC,nil}) // (obrigatorio)
+         aAdd(aDados,{"EEM_VLFRET",SF2->F2_FRETE  ,nil})
+         aAdd(aDados,{"EEM_VLSEGU",SF2->F2_SEGURO ,nil})
+         aAdd(aDados,{"EEM_OUTROS",SF2->F2_DESPESA,nil})
+         ExecBlock("EECFATNF",.F.,.F.,{aDados,3})
+         MsgInfo(STR0008+SF2->F2_DOC,STR0009) //"Número da Nota Fiscal de Complemento de Preço: "###"Aviso"
       Endif
    End Transaction
 End Sequence
@@ -782,7 +761,6 @@ Local aWorkEEQ, nCont
 
 //RMD - 30/10/13 - Permite marcar todas as parcelas para inclusão do valor em uma única NF
 Private lMarcaTodos := .F.
-Private lExecEstorn := .F.
 
 Begin Sequence
 
@@ -887,7 +865,7 @@ Local lRet     := .T.
 Local nOpcao   := 0
 
 Local lInverte := .F.
-Local bOk
+Local bOk      := { || If(!CampoNaoSel(),(nOpcao:=1, oDlg:End()),) }
 Local bCancel  := { || nOpcao:=0, oDlg:End() }
 
 Local aSelFieldsSC6 := {{"C6_NUM",     AVSX3("C6_NUM",     AV_PICTURE), AVSX3("C6_NUM",     AV_TITULO)},;
@@ -910,7 +888,7 @@ Local aSelectFields := {{"EEQ_FLAG",   "XX",                            ""},;
                         {"EEQ_DTNEGO", AVSX3("EEQ_DTNEGO", AV_PICTURE), "Dt.Negociac."},;
                         {"EEQ_PGT",    AVSX3("EEQ_PGT",    AV_PICTURE), "Dt.Fechamento"}}
 
-Local aButtons
+Local aButtons := {{"NOTE", {|| If(lMarcaTodos := MarcaTodas(), Eval(bOK), ) },"Marca Todas"}}
 
 Private cMarca := GetMark(), oMsSelect
 Private aTela[0][0], aGets[0], nUsado:=0
@@ -920,12 +898,7 @@ Private aCampos:={}, aHeader:={}, lALTERA:=.T., lSITUACAO:=.T.
 Private aApropria := {}
 Private oSayPesBru,oSayPesLiq
 
-DEFAULT lCambio:= .F.          
-
-aButtons := {{"NOTE", {|| If(lMarcaTodos := MarcaTodas( If(lCambio,"WorkSC6","WorkEEQ") , 3), ( lExecEstorn := .F. , Eval(bOK) ), ) },"Marca Todas para geração da NFC"},  ;
-             {"NOTE", {|| If(lMarcaTodos := MarcaTodas( If(lCambio,"WorkSC6","WorkEEQ") , 5), ( lExecEstorn := .T. , Eval(bOK) ), ) },"Marca Todas para estorno da NFC"}   }
-                               
-bOk      := {|| If(!CampoNaoSel(If(lCambio,"WorkSC6","WorkEEQ")),(nOpcao:=1, oDlg:End()),) }
+DEFAULT lCambio:= .F.
 
 Begin Sequence
 	
@@ -951,7 +924,7 @@ Begin Sequence
 	   aPos := PosDlg(oDlg)              
 	   MsSelect():New("WorkSC6", "C6_FLAG",, aSelFieldsSC6, @lInverte, @cMarca, aPos)
 	   Activate MSDialog oDlg Centered On Init;
-	   				    (EnchoiceBar( oDlg, {||nOpcao:=1,oDlg:End()}, bCancel,, /*aButtons*/))
+	   				    (EnchoiceBar( oDlg, {||nOpcao:=1,oDlg:End()}, bCancel,, aButtons))
 	   If nOpcao = 0
 	   	  lRet := .F.
 	   EndIf
@@ -962,31 +935,18 @@ End Sequence
 Return(lRet)
 
 //RMD - 30/10/13 - Marca todas as parcelas para inclusão em uma única NF
-Static Function MarcaTodas(cAlias,nOpc)
+Static Function MarcaTodas()
 Local lRet := .F.
-Local bCondMark,cFieldMark, cBCondMark, nRec 
-Default cAlias := ""
 
-nRec       := (cAlias)->(recno())
-cBCondMark := If( cAlias == "WorkEEQ", "{|| Empty((cAlias)->EEQ_FLAG) .And. !Empty((cAlias)->EEQ_PGT) .And. " + If(nOpc == 3,"","!") + "Empty((cAlias)->EEQ_PEDCAM)}" , "{|| Empty((cAlias)->C6_FLAG) }" )
-bCondMark  := &(cBCondMark)                                   
-cFieldMark := If(cAlias == "WorkEEQ", "EEQ_FLAG", "C6_FLAG")
+	WorkEEQ->(DbGoTop())
+	While (WorkEEQ->(!Eof()))
+		If Empty(WorkEEQ->EEQ_FLAG) .And. !Empty(WorkEEQ->EEQ_PGT) .And. Empty(WorkEEQ->EEQ_PEDCAM)
+			WorkEEQ->EEQ_FLAG := cMarca
+			lRet := .T.
+		EndIf
+		WorkEEQ->(DbSkip())
+	EndDo
 
-If !Empty(cAlias)
-   (cAlias)->(DbGoTop())
-   While ((cAlias)->(!Eof()))
-     If eval(bCondMark)
-	    (cAlias)->&(cFieldMark) := cMarca
-        nRec := (cAlias)->(recno())
-		lRet := .T.
-	 EndIf
-	 (cAlias)->(DbSkip())
-   EndDo
-EndIf 
-(cAlias)->(DbGoTo(nRec))
-If !lRet
-   MsgInfo("Não há itens que atendam aos critérios para esta seleção!")
-EndIf
 Return lRet
                                       
 /*
@@ -1024,9 +984,6 @@ If lRet .and. cCampo == "EEQ_FLAG"
    Else
       WorkEEQ->EEQ_FLAG := ""
    End If
-   If IsMemVar("lExecEstorn")
-      lExecEstorn := !Empty(WorkEEQ->EEQ_PEDCAM)
-   EndIf
 End IF
 
 Return(lRet) 
@@ -1062,14 +1019,12 @@ Local nTotalItens := 0
 Local aItEmb := {}
 Local cMensagem := ""
 Local nVRateio := nTRateio := 0   //LGS-24/02/2014
-Local nCont, nCont2, cNFsGeradas := "", cNFsEstorn := ""
-Local cChavPedVen
 
 Private nValorIt := 0
 
 Begin Sequence
-  
-   IF lExecEstorn .And. !Empty(WorkEEQ->EEQ_PEDCAM)
+
+   IF !lMarcaTodos .And. !Empty(WorkEEQ->EEQ_PEDCAM)
       lEstorna := .t.
    Endif   
 
@@ -1161,7 +1116,8 @@ Begin Sequence
 				EndDo
 				QRYEE9->(DbCloseArea())
 				//***
-			
+
+				
 				cMensagem := "Relação de itens para controle de variação cambial:" + ENTER + ENTER
 				
 				//*** Avalia a variação cambial para cada parcela, detalhando os itens/Nfs relacionados
@@ -1306,8 +1262,8 @@ Begin Sequence
 		         	aAdd(aReg,{"C6_CF"   ,   SD2->D2_CF,      Nil}) // Codigo Fiscal ...                  
 		         	aAdd(aReg,{"C6_LOCAL",   SB1->B1_LOCPAD,  Nil}) // Almoxarifado
 		         	aAdd(aReg,{"C6_ENTREG",  dDataBase,       Nil}) // Dt.Entrega
-		         	aAdd(aReg,{"C6_NFORI",   SD2->D2_DOC,     nil}) // NF. Origem.   GFP - 21/01/2014
-		         	aAdd(aReg,{"C6_SERIORI", SD2->D2_SERIE,   nil}) // Serie Origem. GFP - 21/01/2014
+		         	aAdd(aReg,{"C6_NFORI",   SF2->F2_DOC  /*"01"*/,nil}) // NF. Origem.   GFP - 21/01/2014
+		         	aAdd(aReg,{"C6_SERIORI", SF2->F2_SERIE /*"A"*/,nil}) // Serie Origem. GFP - 21/01/2014
 		         	aAdd(aItens, aClone(aReg))    
 		         
 		         	RecLock("WorkSC6",.T.)
@@ -1325,7 +1281,7 @@ Begin Sequence
          	Next
 		    
 		    //*** O VALOR DA DIFERENÇA DO RATEIO É TIRADO SEMPRE DO PRIMEIRO ITEM
-		    If nTotRateio <> 0 .And. nTotRateio != nVALORIT
+		    If nTotRateio != nVALORIT
 		    	aItens[1][6][2] := aItens[1][6][2] + ( nVALORIT - nTotRateio )
 		    	aItens[1][7][2] := aItens[1][7][2] + ( nVALORIT - nTotRateio )
 		    	aItens[1][8][2] := aItens[1][8][2] + ( nVALORIT - nTotRateio )
@@ -1427,8 +1383,7 @@ Begin Sequence
    Else
       // Estorno
       SD2->(dbSetOrder(8))
-      cChavPedVen := xFilial("SD2") + AvKey(WorkEEQ->EEQ_PEDCAM,"D2_PEDIDO")
-      Do While SD2->(dbSeek(cChavPedVen))
+      IF SD2->(dbSeek(xFilial()+WorkEEQ->EEQ_PEDCAM))
          aDados := {}
          aAdd(aDados,{"EEM_TIPOCA","N"            ,nil}) // Nota Fiscal (obrigatorio)
          aAdd(aDados,{"EEM_PREEMB",EEC->EEC_PREEMB,nil}) // Nro.do Embarque (obrigatorio)
@@ -1440,8 +1395,7 @@ Begin Sequence
          aAdd(aCab,{"F2_DOC"  ,SD2->D2_DOC  ,nil})
          aAdd(aCab,{"F2_SERIE",SD2->D2_SERIE,nil})
          Mata520(aCab)
-         cNFsEstorn += "Nota: "+ SD2->D2_DOC +" Série:"+ SD2->D2_SERIE + Chr(13) + Chr(10)
-      EndDo
+      Endif
       
       SC5->(dbSetOrder(1))
       SC5->(dbSeek(xFilial()+WorkEEQ->EEQ_PEDCAM))     
@@ -1510,7 +1464,7 @@ Begin Sequence
       	 	EndIf
       	 	WorkEEQ->(DbSkip())
       	 EndDo
-         MsgInfo (STR0028 + Chr(13) + Chr(10) + cNFsEstorn ,STR0009) //Nota Fiscal Estornada !.
+         MsgInfo (STR0028,STR0009) //Nota Fiscal Estornada !.
       Else   
          MostraErro() 
       EndIf                   
@@ -1526,50 +1480,45 @@ Begin Sequence
          EndIf
          Break
       Endif
-
-      aItensNFC:= AgrupaNFs()                 //NCF - 01/10/2019
+      
       cSerieNF := EasyGParam("MV_EECSERI")
+      IncNota(aCab[1,2],cSerieNF,EEC->EEC_PREEMB)
+
       SD2->(DBSETORDER(8))
+      SD2->(DBSEEK(XFILIAL("SD2")+AVKEY(aCab[1,2],"D2_PEDIDO")))
       SF2->(DBSETORDER(1))
-      For nCont:= 1 to Len(aItensNFC)
-         aNFsGeradas:= {}
-         EECIncNFC(aCab[1,2],cSerieNF,EEC->EEC_PREEMB,@aNFsGeradas, aItensNFC[nCont][2])
-
-         For nCont2:= 1 to Len(aNFsGeradas)
-            SF2->(DBSEEK(XFILIAL("SF2") + AVKEY(aNFsGeradas[nCont2][2], "F2_DOC") + AVKEY(aNFsGeradas[nCont2][1], "F2_SERIE")))
-            SD2->(DBSEEK(XFILIAL("SD2") + AVKEY(aCab[1,2],"D2_PEDIDO")))      
-            aDados := {}
-            aAdd(aDados,{"EEM_TIPOCA","N"            ,nil}) // Nota Fiscal (obrigatorio)
-            aAdd(aDados,{"EEM_PREEMB",EEC->EEC_PREEMB,nil}) // Nro.do Embarque (obrigatorio)
-            aAdd(aDados,{"EEM_TIPONF","2"            ,nil}) // Tipo de Nota 2-Complementar (obrigatorio)
-            aAdd(aDados,{"EEM_NRNF"  ,SF2->F2_DOC    ,nil}) // (obrigatorio)
-            aAdd(aDados,{"EEM_SERIE" ,SF2->F2_SERIE  ,nil})
-            aAdd(aDados,{"EEM_DTNF"  ,SF2->F2_EMISSAO,nil})
-            aAdd(aDados,{"EEM_VLNF"  ,SF2->F2_VALBRUT,nil}) // (obrigatorio)
-            aAdd(aDados,{"EEM_VLMERC",SF2->F2_VALMERC,nil}) // (obrigatorio)
-            aAdd(aDados,{"EEM_VLFRET",SF2->F2_FRETE  ,nil})
-            aAdd(aDados,{"EEM_VLSEGU",SF2->F2_SEGURO ,nil})
-            aAdd(aDados,{"EEM_OUTROS",SF2->F2_DESPESA,nil})
-            ExecBlock("EECFATNF",.F.,.F.,{aDados,3})
-            cNFsGeradas += aNFsGeradas[nCont2][2] + Chr(13) + Chr(10)
-
-    	    WorkEEQ->(DbGoTop())
-      	    While WorkEEQ->(!Eof())
-      	 	   If !Empty(WorkEEQ->EEQ_FLAG)
-      	 	      EEQ->(DbGoTo(WorkEEQ->EEQ_RECNO))      	 	
-      	 		  If EEQ->(RecLock("EEQ", .F.))
-      	 			 EEQ->EEQ_PEDCAM := aCAB[1,2]
-      	 			 EEQ->(MsUnlock())
-      	 		  Else
-      	 			 MsgInfo("Erro ao atualizar a parcela de câmbio", "Aviso")
-      	 			 Break
-      	 		  EndIf
-      	 	   EndIf
-      	 	   WorkEEQ->(DbSkip())
-      	    EndDo
-         Next nCont2
-      Next nCont
-      MsgInfo(STR0008 + Chr(13) + Chr(10) + cNFsGeradas,STR0009) //"Número da Nota Fiscal de Complemento de Preço: "###"Aviso"            
+      SF2->(DBSEEK(XFILIAL("SF2")+AVKEY(SD2->D2_DOC,"F2_DOC")+AVKEY(SD2->D2_SERIE,"F2_SERIE")))
+      
+      aDados := {}
+      aAdd(aDados,{"EEM_TIPOCA","N"            ,nil}) // Nota Fiscal (obrigatorio)
+      aAdd(aDados,{"EEM_PREEMB",EEC->EEC_PREEMB,nil}) // Nro.do Embarque (obrigatorio)
+      aAdd(aDados,{"EEM_TIPONF","2"            ,nil}) // Tipo de Nota 2-Complementar (obrigatorio)
+      aAdd(aDados,{"EEM_NRNF"  ,SF2->F2_DOC    ,nil}) // (obrigatorio)
+      aAdd(aDados,{"EEM_SERIE" ,SF2->F2_SERIE  ,nil})
+      aAdd(aDados,{"EEM_DTNF"  ,SF2->F2_EMISSAO,nil})
+      aAdd(aDados,{"EEM_VLNF"  ,SF2->F2_VALBRUT,nil}) // (obrigatorio)
+      aAdd(aDados,{"EEM_VLMERC",SF2->F2_VALMERC,nil}) // (obrigatorio)
+      aAdd(aDados,{"EEM_VLFRET",SF2->F2_FRETE  ,nil})
+      aAdd(aDados,{"EEM_VLSEGU",SF2->F2_SEGURO ,nil})
+      aAdd(aDados,{"EEM_OUTROS",SF2->F2_DESPESA,nil})
+      ExecBlock("EECFATNF",.F.,.F.,{aDados,3})
+      
+    	 WorkEEQ->(DbGoTop())
+      	 While WorkEEQ->(!Eof())
+      	 	If !Empty(WorkEEQ->EEQ_FLAG)
+      	 		EEQ->(DbGoTo(WorkEEQ->EEQ_RECNO))      	 	
+      	 		If EEQ->(RecLock("EEQ", .F.))
+      	 			EEQ->EEQ_PEDCAM := aCAB[1,2]
+      	 			EEQ->(MsUnlock())
+      	 		Else
+      	 			MsgInfo("Erro ao atualizar a parcela de câmbio", "Aviso")
+      	 			Break
+      	 		EndIf
+      	 	EndIf
+      	 	WorkEEQ->(DbSkip())
+      	 EndDo
+     
+         MsgInfo(STR0008+SF2->F2_DOC,STR0009) //"Número da Nota Fiscal de Complemento de Preço: "###"Aviso"            
    Endif
 
 End Sequence
@@ -1632,26 +1581,20 @@ Revisão    :
 Data/Hora  : 
 */                              
 
-Static Function CampoNaoSel(cAlias)
+Static Function CampoNaoSel()
 
-Local lRet := .T., nRec := (cAlias)->(Recno())
-Local cFieldMark
-Default cAlias := ""
-cFieldMark := If(cAlias == "WorkEEQ", "EEQ_FLAG", "C6_FLAG")
-
-If !Empty(cAlias)
-   Begin Sequence
-      (cAlias)->(DbGoTop())
-      Do While ! (cAlias)->(Eof())
-         If !Empty( (cAlias)->&(cFieldMark) )
-            lRet := .F.
-            Exit
-         EndIf
-         (cAlias)->(DbSkip())
-      EndDo               
-      (cAlias)->(DbGoTo(nRec))   
-   End Sequence
-EndIf
+Local lRet := .T., nRec := WorkEEQ->(Recno())
+ 
+Begin Sequence
+   WorkEEQ->(DbGoTop())
+   Do While ! WorkEEQ->(Eof())
+      If ! Empty(WorkEEQ->EEQ_FLAG)
+         lRet := .F.
+      EndIf
+      WorkEEQ->(DbSkip())
+   EndDo               
+   WorkEEQ->(DbGoTo(nRec))   
+End Sequence
 
 Return(lRet)   
 
@@ -1758,172 +1701,3 @@ Local cCF := AvKey(EasyGParam("MV_AVG0107"),"C6_CF")
    EndIf
 
 Return cCF
-
-
-/*
-Função     : AgrupaNFs
-Parametros : Nenhum
-Retorno    : Array com os itens do pedido agrupados por nota fiscal de origem
-Objetivo   : Agrupar os itens do pedido de venda por nota fiscal de origem
-Autor      : Wilsimar Fabricio da Silva
-Data/Hora  : jul/2019
-Revisão    : 
-Data/Hora  : 
-*/
-Static Function AgrupaNFs()
-Local aNfs:= {}
-Local nCont:= {}
-Local nPos:= 0
-Local nPosC6_ITEM:= 0
-Local nPosC6_NFORI:= 0
-
-Begin Sequence
-
-   For nCont:= 1 to Len(aItens)
-
-      If nCont == 1
-         nPosC6_ITEM:= AScan(aItens[nCont], {|x| x[1] == "C6_ITEM"})
-         nPosC6_NFORI:= AScan(aItens[nCont], {|x| x[1] == "C6_NFORI"})
-      EndIf
-
-      /* Se a nota de origem não constar no array aNfs, adiciona-a juntamente com o item do pedido de venda */
-      If (nPos:= AScan(aNfs, {|y| y[1] == aItens[nCont][nPosC6_NFORI][2]})) == 0
-         AAdd(aNfs, {aItens[nCont][nPosC6_NFORI][2], {aItens[nCont][nPosC6_ITEM][2]}})
-      Else
-         /* Se a nota de origem constar no array, adiciona apenas o iten do pedio de venda */
-         AAdd(aNfs[nPos][2], aItens[nCont][nPosC6_ITEM][2])
-      EndIf
-
-   Next
-
-End Sequence
-
-Return AClone(aNfs)
-
-
-/*
-Função     : EECIncNFC
-Parametros : cC5Num,cSerie,cEmbExp,aNotas,aItens
-Retorno    : Nenhum
-Objetivo   : Gerar as notas fiscais complementares
-Autor      : Wilsimar Fabricio da Silva
-Data/Hora  : Out/2019
-Revisão    : NCF - Out/2019 - Migrada do fonte fatxfun.prx onde tinha o nome "incnota"
-Data/Hora  : 
-*/
-Function EECIncNFC(cC5Num,cSerie,cEmbExp,aNotas,aItens)
-Local aPvlNfs := {}
-Local nItemNf := a460NumIt(cSerie)
-Local nCont:= 0
-Local nPosItLib
-
-Default cEmbExp := ""
-Default aNotas := {}
-Default aItens := {}
-
-Begin Sequence
-
-	SC5->(DbSetOrder(1))
-	SC5->(MsSeek(xFilial("SC5")+cC5Num))
-
-	SC6->(dbSetOrder(1))
-	SC6->(MsSeek(xFilial("SC6")+SC5->C5_NUM))
-
-
-	/*
-		Quando for a geração da nota fiscal complementar originada pelo módulo SIGAEEC, serão efetuadas as liberações apenas
-		dos itens do pedido que constarem na lista.
-	*/
-	If !Empty(cEmbExp) .And. Len(aItens) > 0
-		
-		For nCont:= 1 to Len(aItens) 
-       
-			   SC6->(MsSeek(xFilial("SC6") + SC5->C5_NUM + aItens[nCont]))
-			   /* Carregar o array aPvlNfs com os itens de devem ser liberados e usados na geração do documento de saída */
-			   EECLiberPV(@aPvlNfs)
-
-			   If ( Len(aPvlNfs) >= nItemNf )
-			      cNota := MaPvlNfs(aPvlNfs,cserie , .F.    , .F.    , .F.     , .T.    , .F.    , 0      , 0          , .T.  ,.F.,cEmbExp)
-				  aPvlNfs := {}
-				  AAdd( aNotas, { cSerie, cNota } )
-			   EndIf
-		Next
-
-		Break
-	EndIf
-
-
-	While SC6->(!Eof() .And. C6_FILIAL == xFilial("SC6")) .And.;
-			SC6->C6_NUM == SC5->C5_NUM
-		
-		/* Carregar o array aPvlNfs com os itens de devem ser liberados e usados na geração do documento de saída */
-		EECLiberPV(@aPvlNfs)
-
-		If ( Len(aPvlNfs) >= nItemNf )
-			cNota := MaPvlNfs(aPvlNfs,cserie , .F.    , .F.    , .F.     , .T.    , .F.    , 0      , 0          , .T.  ,.F.,cEmbExp)
-			aPvlNfs := {}
-			AAdd( aNotas, { cSerie, cNota } )
-		EndIf
-
-		SC6->(DbSkip())
-	EndDo
-
-End Sequence
-
-If Len(aPvlNfs) > 0
-	cNota := MaPvlNfs(aPvlNfs,cserie, .F.    , .F.    , .F.     , .T.    , .F.    , 0      , 0          , .T.  ,.F.,cEmbExp)
-	AAdd( aNotas, { cSerie, cNota } )
-EndIf
-
-Return
-
-/*
-Função     : EECLiberPV
-Parametros : Array de itens para liberação (recebido por referência)
-Retorno    : Nenhum
-Objetivo   : Montar array com os itens do pedido de venda que serão liberados e faturados pela função MaPvlNfs
-Autor      : Wilsimar Fabricio da Silva
-Data/Hora  : jul/2019
-Revisão    : 
-Data/Hora  : 
-*/
-Static Function EECLiberPV(aPvlNfs)
-Local nPrcVen := 0
-
-	SC9->(DbSetOrder(1))
-	SC9->(MsSeek(xFilial("SC9")+SC6->(C6_NUM+C6_ITEM))) //FILIAL+NUMERO+ITEM
-
-	SE4->(DbSetOrder(1))
-	SE4->(MsSeek(xFilial("SE4")+SC5->C5_CONDPAG) )  //FILIAL+CONDICAO PAGTO
-
-	SB1->(DbSetOrder(1))
-	SB1->(MsSeek(xFilial("SB1")+SC6->C6_PRODUTO))    //FILIAL+PRODUTO
-
-	SB2->(DbSetOrder(1))
-	SB2->(MsSeek(xFilial("SB2")+SC6->(C6_PRODUTO+C6_LOCAL))) //FILIAL+PRODUTO+LOCAL
-
-	SF4->(DbSetOrder(1))
-	SF4->(MsSeek(xFilial("SF4")+SC6->C6_TES))   //FILIAL+TES
-
-	nPrcVen := SC9->C9_PRCVEN
-	If ( SC5->C5_MOEDA <> 1 )
-		nPrcVen := xMoeda(nPrcVen,SC5->C5_MOEDA,1,dDataBase)
-	EndIf
-
-	AAdd(aPvlNfs,{ SC9->C9_PEDIDO,;
-		SC9->C9_ITEM,;
-		SC9->C9_SEQUEN,;
-		SC9->C9_QTDLIB,;
-		nPrcVen,;
-		SC9->C9_PRODUTO,;
-		.f.,;
-		SC9->(RecNo()),;
-		SC5->(RecNo()),;
-		SC6->(RecNo()),;
-		SE4->(RecNo()),;
-		SB1->(RecNo()),;
-		SB2->(RecNo()),;
-		SF4->(RecNo())})
-
-Return
-

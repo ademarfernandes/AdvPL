@@ -216,11 +216,11 @@
 User Function LOJRNFCe(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 						cProtAuto	, lContigen	, cDtHoraAut, aEmitNfce	,; 
 						aDestNfce	, aIdNfce	, aPagNfce	, aItemNfce	,; 
-						aTotal		, cChvNFCe  , cInscMun  , aItensNFCe,;
-						cXMLProt )						 
+						aTotal		, cChvNFCe	)
 
 	Local lPrinter 	:= .F.			
 	Local cXml		:= ""
+	Local cXmlProt	:= ""
 	Local cPath 			:= "\spool\"		
 	Local cSession			:= GetPrinterSession()	
 	Local cStartPath		:= GetSrvProfString("StartPath","")	
@@ -242,10 +242,7 @@ User Function LOJRNFCe(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 	Default cProtAuto	:= ""
 	Default lContigen	:= .T.
 	Default cDtHoraAut	:= ""
-	Default cChvNFCe	:= ""	
-	Default cInscMun    := ""
-	Default aItensNFCe  := {}    
-	Default cXMLProt    := ""  		                                          	                                	    
+	Default cChvNFCe	:= ""	          		                                          	                                	    
 		
 	oPrint := FWMsPrinter():New("Impressão NFC-e_"+cChvNFCe, IMP_PDF, lAdjustToLegacy,cPath)
 	
@@ -254,8 +251,7 @@ User Function LOJRNFCe(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 		oPrint:SetPaperSize(DMPAPER_A4)
 		
 		LJMsgRun("Imprimindo NFC-e",,{|| U_LjrImpNFCE(oNFCe, oProt, nDecimais, aFormas, cProtAuto, lContigen, cDtHoraAut, ;
-														aEmitNfce, aDestNfce, aIdNfce, aPagNfce, aItemNfce, aTotal, cChvNFCe, ; 
-														aItensNFCe, cXMLProt )})
+						aEmitNfce, aDestNfce, aIdNfce, aPagNfce, aItemNfce, aTotal, cChvNFCe)})
 		
 		oPrint:Preview()
 	Else
@@ -267,7 +263,7 @@ Return Nil
 User Function LjRImpNFCE(	oNFCe		, oProt		, nDecimais	, aFormas	,; 
 							cProtAuto	, lContigen	, cDtHoraAut, aEmitNfce	,; 
 							aDestNfce	, aIdNfce	, aPagNfce	, aItemNfce	,;
-							aTotal		, cChvNFCe	, aItensNFCe, cXMLProt )
+							aTotal		, cChvNFCe	)
 	
 	Local aItNfceAux	:= {}//Itens	
 	Local nContItImp	:= 0
@@ -305,12 +301,6 @@ User Function LjRImpNFCE(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 	Local cColuna		:= "" //Texto da Coluna
 	Local cMaskTot		:= "" //Mascara de total
 	Local nTamMask		:= 0 //Tamanho do Total
-	Local nValDeson     := 0 //Valor do imposto da Desoneração
-	Local nTotDeson     := 0 //Valor total do imposto da desoneração
-	Local cMsgDeson     := "Valor do ICMS abatido: R$" // mensagem a ser impresso para desoneração de ICMS
-	Local aMsgNfPre     := {}   // Mensagem de Nota Fiscal Premiada
-	
-
 	//1 - Label
 	//2 - Pos Coluna
 	//3 - Tamanho
@@ -321,7 +311,7 @@ User Function LjRImpNFCE(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 				 { "Descricao", 0430, 40, "", "D"},;		
 				{ "Qtd", 1250, 6, "", "E"},;	
 				{ "UN", 1500, 2, "", "D"},;	
-				{ "VlUnit.", 1600, 14, '@E 999,999,999.99', "E"},;				
+				{ "VlUnit.", 1600, 14, '@E 999,999,999.99', "E"},;	
 				{ "VlTotal.", 1800, 17, '@E 999,999,999,999.99', "E"}}
 				
 
@@ -380,12 +370,15 @@ User Function LjRImpNFCE(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 		* a impressao dessa divisão é opcional ou conforme definido por UF
 	*/
 	
+
+	
 	For nI := 1 to Len(aColDet)
 		If aColDet[nI, 05] = "D"
 			cColuna  := PadR(aColDet[nI, 01], aColDet[nI, 03])
 		Else
 			cColuna  := PadL(aColDet[nI, 01], aColDet[nI, 03])
-		EndIf		
+		EndIf
+		
 	
 		oPrint:Say( nAuxLn,aColDet[nI, 02], cColuna, oFont1 )
 	Next nI
@@ -394,12 +387,9 @@ User Function LjRImpNFCE(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 
 		nContItImp++ //Contador de itens a serem impressos
 
-		nValDeson := IIf(Len(aItensNFCe) > 0 .And. Len(aItensNFCe[nX+1]) >= 9 .And. aItensNFCe[nX+1][8] <> "S"  ,aItensNFCe[nX+1][9], 0)  
-		nTotDeson += nValDeson
-
 		nItemQtde	:= Val(aItemNfce[nX]:_PROD:_QCOM:TEXT)
-		nItemUnit 	:= Val(aItemNfce[nX]:_PROD:_VUNCOM:TEXT) 
-		nItemTotal	:= Val(aItemNfce[nX]:_PROD:_VPROD:TEXT) 
+		nItemUnit 	:= Val(aItemNfce[nX]:_PROD:_VUNCOM:TEXT)
+		nItemTotal	:= Val(aItemNfce[nX]:_PROD:_VPROD:TEXT)
 
 		nAuxLn += 40
 		
@@ -426,12 +416,6 @@ User Function LjRImpNFCE(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 			oPrint:Say( nAuxLn,aColDet[02, 02],PADR(cDescrPro, nTamCol ),oFont1 )					//Descricao de Produto
 			cDescrPro := Substr(cDescrPro,nTamCol+1,Len(AllTrim(cDescrPro)))			
 		EndDo
-
-		If nValDeson > 0
-			nAuxLn+=40
-			oPrint:Say( nAuxLn,aColDet[02, 02],cMsgDeson, oFont1 )		//Mensagem de Desoneração
-			oPrint:Say( nAuxLn,aColDet[06, 02],PadL(AllTrim(Transform(nValDeson, aColDet[06, 04])),aColDet[06, 03])			,oFont1 )	//Valor Desoneração
-		EndIf
 		
 		If nAuxLn > nTamPgV
 			nAuxLn := 20
@@ -453,9 +437,9 @@ User Function LjRImpNFCE(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 	nAuxLn += 40
 	//se existir ISSQN, o VALOR TOTAL é igual a soma da tag vProd + vServ
 	If LjRTemNode(aTotal,"_ISSQNTOT")
-		nVlrTotal := Val(aTotal:_ICMSTOT:_VPROD:TEXT) + Val(aTotal:_ISSQNTot:_VSERV:TEXT) - nTotDeson
+		nVlrTotal := Val(aTotal:_ICMSTOT:_VPROD:TEXT) + Val(aTotal:_ISSQNTot:_VSERV:TEXT)
 	Else
-		nVlrTotal := Val(aTotal:_ICMSTOT:_VPROD:TEXT) - nTotDeson
+		nVlrTotal := Val(aTotal:_ICMSTOT:_VPROD:TEXT)
 	EndIf
 	oPrint:Say( nAuxLn,aColDet[01, 02],"VALOR TOTAL R$")
 	oPrint:Say( nAuxLn,aColDet[06, 02],PADL(AllTrim(Transform(nVlrTotal, cMaskTot)),nTamMask))
@@ -594,8 +578,9 @@ User Function LjRImpNFCE(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 
 	oPrint:Say( nAuxLn, 1, PadC(cTextoAux,85), oFont )
 	nAuxLn += 40
-	
+
 	If !lContigen
+
 		aDtHrLocal := LjUTCtoLoc(cDtHoraAut)
 		/* Protocolo de Autorização  DD/MM/AAAA hh:mm:ss */
 		cTextoAux := "Protocolo de Autorização: " + cProtAuto + " "
@@ -635,22 +620,6 @@ User Function LjRImpNFCE(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 		nAuxLn += 60
 	EndIf
 
-    // Mensagem para a Nota Fiscal Premiada MS
-	If !Empty(cXMLProt)
-		aMsgNfPre := StrToKArr(cXMLPROT,"|")
-		If Len(aMsgNfPre) > 2 .And. "DEZENAS" $ Upper(aMsgNfPre[2])
-			cTextoAux := "NOTA MS PREMIADA" 
-			oPrint:Say( nAuxLn, 1, PadC(cTextoAux,85), oFont )
-			nAuxLn += 40
-			cTextoAux := aMsgNfPre[2] 
-			oPrint:Say( nAuxLn, 1, PadC(cTextoAux,85), oFont )
-			nAuxLn += 40
-			cTextoAux := SubStr(aMsgNfPre[3],1, AT("<",aMsgNfPre[3]) -1 )
-			oPrint:Say( nAuxLn, 1, PadC(cTextoAux,85), oFont )
-			nAuxLn += 60			
-		EndIf
-	EndIf
-
 	//Se Ambiente for Homologacao		
 	If cAmbiente == "2"		
 		oPrint:Say( nAuxLn, 1, PadC("EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO – SEM VALOR FISCAL",85), oFont )
@@ -683,7 +652,7 @@ User Function LjRImpNFCE(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 	nAuxLn += 775
 	
 	//Impressão do QrCode
-	oPrint:QRCode( nAuxLn, 750, cKeyQRCode,1)
+	oPrint:QRCode( nAuxLn, 750, cKeyQRCode,5)
 
 	/*		
 		DIVISAO IX – Mensagem de Interesse do Contribuinte
@@ -723,19 +692,18 @@ Imprime Danfe(Vulgo: Danfinha)
 @return	 lRet - imprimiu 
 */
 //--------------------------------------------------------
-User Function LjRDnfNFCe(cXML, cXMLProt, cChvNFCe, lDANFEPad,aItensNFCe)
+User Function LjRDnfNFCe(cXML, cXMLProt, cChvNFCe, lDANFEPad)
+
 Local nX			:= 0 
 Local nY			:= 0 
 Local aFormas		:= {}
 Local aRet			:= {}
 Local lRet			:= .T. //Retorna se conseguiu transmitir a Nota, não deve retornar erro caso ocorra problema de impressao
 Local lImpComum		:= SuperGetMV("MV_LJSTPRT",,1) == 2
-Local lPOS 			:= STFIsPOS()
 Local cTexto		:= ""  
-Local cCRLF			:= Chr(10)
-Local cImpressora	:= IIF(lPOS, STFGetStation("IMPFISC"),LjGetStation("IMPFISC"))
-Local cPorta		:= IIF(lPOS, STFGetStation("PORTIF"),LjGetStation("PORTIF"))
-Local cModelo		:= AllTrim( cImpressora )
+Local cCrLf			:= Chr(10)
+Local cImpressora	:= ""
+Local cPorta		:= ""
 Local cTextoAux 	:= ""
 Local cFormaPgto	:= ""
 Local cVlrFormPg	:= ""
@@ -762,6 +730,8 @@ Local nRetImp 		:= -1
 Local cL2ItemPic	:= ""	
 Local nConteudo		:= 0
 Local cConteudo		:= ""
+Local lPOS 			:= STFIsPOS()
+Local cModelo		:= AllTrim( IIF(lPOS, STFGetStation("IMPFISC"), LJGetStation("IMPFISC")) )
 Local lCondensa		:= SuperGetMV("MV_LJCONDE",,.F.) .OR. IIf("EPSON" $ cModelo, .T., .F.)
 Local cTagCondIni	:= Iif(lCondensa, TAG_CONDEN_INI , "")
 Local cTagCondFim	:= IIf(lCondensa, TAG_CONDEN_FIM , "")
@@ -777,26 +747,18 @@ Local aColDiv2		:= {}	//largura das colunas da Divisao II
 Local lSTImPFNfce	:= ExistFunc("STImPFNfce") .And. STImPFNfce()
 Local cImgQrCode	:= ""
 Local aMensagem		:= ""
+Local cImpressora	:= LjGetStation("IMPFISC")
+Local cPorta		:= LjGetStation("PORTIF")
 Local lContinua		:= .F.
 Local lSaiImp		:= .F.
 Local nMVNFCEIMP	:= SuperGetMV("MV_NFCEIMP",, 1)
 Local cVersao		:= ""	// Versao da NFC-e
-Local lImpConting	:= .F.
-Local lClasImpNfce	:= ExistFunc("LNfceTemCo")
-Local oLojINfce		:= IIF( lClasImpNfce , LOJINFCE():New(), NIL ) 
-Local nValDeson     := 0	// Valor do imposto da desoneração
-Local nTotDeson     := 0	// Valor Total do imposto da desoneração
-Local aMsgNfPre     := {}   // Mensagem de Nota Fiscal Premiada
-
-
-
 
 //Parametros enviados pela função no fonte LOJNFCE
 Default cXml 		:= ""
 Default cXmlProt	:= ""
 Default cChvNFCe	:= ""
 Default lDanfePad	:= .F.
-Default aItensNFCe  := {}
 
 Private oNFCe				//retorno do XML da NFCe funcao convertido para objeto
 Private oProt				//retorno do XML do protocolo de autorizacao convertido para objeto
@@ -804,7 +766,7 @@ Private aDestNFCe	:= {}	//dados do destinatário
 Private aItemNFCe	:= {}	//dados dos itens
 
 BEGIN SEQUENCE
-	
+
 	//-----------------------------------------------------
 	// Conversao XML da NFC-e e do Protocolo de Autorizacao
 	//-----------------------------------------------------
@@ -833,9 +795,7 @@ BEGIN SEQUENCE
 	// .T. - apos a execucao do ponto de entrada, realiza a impressao padrao do DANFE
 	// .F. - apos a execucao do ponto de entrada, NAO realiza a impressao padrao do DANFE
 	If ExistBlock("LJ7084")
-		LjGrvLog( NIL, "Antes da execução do PE LJ7084")
 		lLj7084 := ExecBlock( "LJ7084", .F., .F., {oNFCe, oProt} )
-		LjGrvLog( NIL, "Antes da execução do PE LJ7084", lLj7084)
 		If ValType(lLj7084) <> "L"
 			lLj7084 = .T.
 		EndIf
@@ -844,7 +804,7 @@ BEGIN SEQUENCE
 	//--------------------------
 	// Impressao padrao do DANFE
 	//--------------------------
-	If (lDanfePad .AND. lLj7084) .Or. lSTImPFNfce
+	If (lDanfePad .AND. lLJ7084) .Or. lSTImPFNfce
 		
 		lImpComum := lImpComum .And. !lSTImPFNfce
 		
@@ -901,14 +861,11 @@ BEGIN SEQUENCE
 		aFormas := LjDfRetFrm()
 
 		lContigen := oNFCe:_NFE:_INFNFE:_IDE:_TPEMIS:TEXT <> "1"
-		If lClasImpNfce
-			oLojINfce:lConting := lContigen
-		EndIf
 
 		//Verifica se conseguiu montar o objeto do XML e sinaliza nao contingencia 
 		If (oProt <> NIL) .And. LjRTemNode(oProt:_PROTNFE:_INFPROT,"_NPROT")
 
-			cProtAuto := AllTrim(oProt:_PROTNFE:_INFPROT:_NPROT:TEXT)
+			cProtAuto := AllTrim(oProt:_PROTNFE:_INFPROT:_NPROT:TEXT)			
 
 			If LjRTemNode(oProt:_PROTNFE:_INFPROT,"_DHRECBTO")
 				cDtHoraAut := oProt:_PROTNFE:_INFPROT:_DHRECBTO:TEXT
@@ -1034,7 +991,6 @@ BEGIN SEQUENCE
 		Aadd(aColDiv2, 02)	// Un
 		Aadd(aColDiv2, 08)	// VlUnit.
 		Aadd(aColDiv2, 09)	// VlTotal
-		
 	
 		// soma das colunas Codigo + " " + Descricao 
 		nCodDesc := aColDiv2[1] + 1 + aColDiv2[2]
@@ -1059,8 +1015,6 @@ BEGIN SEQUENCE
 			lImpDesc := .T.
 			nIniDesc := 1
 			nFimDesc := aColDiv2[2] + aColDiv2[3] + aColDiv2[4] + aColDiv2[5] + aColDiv2[6] + 4 //4 espaços separadores
-
-			nValDeson := IIf(Len(aItensNFCe) > 0 .And. Len(aItensNFCe[nX+1 ]) >= 9 .And. aItensNFCe[nX+1][8] <> "S"  ,aItensNFCe[nX+1][9], 0) 
 
 			While lImpDesc
 		
@@ -1117,7 +1071,7 @@ BEGIN SEQUENCE
 			cLinha += PadL(aItemNfce[nX]:_PROD:_UCOM:TEXT, aColDiv2[4]) + " "
 
 			// VlUnit. - valor unitario
-			nConteudo := Val( aItemNfce[nX]:_PROD:_VUNCOM:TEXT ) 
+			nConteudo := Val( aItemNfce[nX]:_PROD:_VUNCOM:TEXT )
 			cConteudo := Transform(nConteudo, cL2ItemPic) + " "
 			cLinha += cConteudo
 
@@ -1128,13 +1082,6 @@ BEGIN SEQUENCE
 		
 			cTexto += (TAG_CENTER_INI + cTagCondIni + cLinha + cTagCondFim + TAG_CENTER_FIM)
 			cTexto += cCRLF
-
-			If  nValDeson > 0 				    
-				cLinha := "Valor do ICMS abatido: R$  "+ Padl(Transform(nValDeson,'@E 999,999.99'),nColunas - 26 )
-				cTexto += (TAG_CENTER_INI + cTagCondIni + cLinha + cTagCondFim + TAG_CENTER_FIM)
-				cTexto += cCRLF
-				nTotDeson += nValDeson
-			EndIf
 
 			If nMVNFCEDES == 1
 				If Type("aItemNfce["+AllTrim(Str(nX))+"]:_PROD:_VDESC") == "O"
@@ -1150,47 +1097,34 @@ BEGIN SEQUENCE
 			EndIf
 			
 			//Tratamento necessário pois dependendo tamanho das informações dos itens a serem impressos,
-			//apos um determinado tamanho o texto não é impresso, gerando o erro de DEBUG/TOTVSAPI na DLL.
+			//apos um determinado tamanho o texto não é impresso, gerenado o erro de DEBUG/TOTVSAPI na DLL.
 			//para isso foi quebrada a impressão em 50 itens.			
 			If nContItImp == 30
 				If !lSTImPFNfce
 					If !lPos
-						//Tratamento paliativo para impressora Bematech, ate a solucao de problema de comunicacao ppor parte da BEMATECH
-						nRetImp := 999						
-						lSaiImp := .F.
-						While nRetImp <> 0 .And. !lSaiImp .And. LjAskImp(nRetImp)
-							LJGrvLog(Nil, "Envia o texto para a impressao intermediaria (INFTexto)")
-							
-							lImpConting := .F.
-							If lClasImpNfce
-								//Se retorno for falso, não houve impressão em contingencia
-								lImpConting := oLojINfce:ImpMsgCon(lContigen, @cTexto, @nRetImp)
-							EndIf
-							
-							If !lImpConting
+						If ExistFunc("LjAskImp")
+							//Tratamento paliativo para impressora Bematech, ate a solucao de problema de comunicacao ppor parte da BEMATECH
+							nRetImp := 999						
+							lSaiImp := .F.
+							While nRetImp <> 0 .And. !lSaiImp .And. LjAskImp(nRetImp)
+								LJGrvLog(Nil, "Envia o texto para a impressao intermediaria (INFTexto)")
 								nRetImp := INFTexto(cTexto)  //Envia comando para a Impressora
-							EndIf
-						
-							If nMVNFCEIMP == 1 .And. nRetImp <> 0 .And. !MsgYesNo("Houve erro na impressão, deseja tentar imprimir novamente ?", "Atenção")
-								lSaiImp := .T.
-								LjGrvLog( Nil,	" Impressão da NFC-e está como não obrigatório [MV_NFCEIMP igual a 1], " +; 
-												" houve erro na impressão do comprovante e usuário optou por sair sem imprimir  ")
-							EndIf
-						End
+								
+								If nMVNFCEIMP == 1 .And. nRetImp <> 0 .And. !MsgYesNo("Houve erro na impressão, deseja tentar imprimir novamente ?", "Atenção")
+									lSaiImp := .T.
+									LjGrvLog( Nil,	" Impressão da NFC-e está como não obrigatório [MV_NFCEIMP igual a 1], " +; 
+													" houve erro na impressão do comprovante e usuário optou por sair sem imprimir  ")
+								EndIf
+							End
+						Else
+							LJGrvLog(Nil, "Envia o texto para a impressao intermediaria (INFTexto)")
+							nRetImp := INFTexto(cTexto)  //Envia comando para a Impressora
+						EndIf
 					Else
-						lImpConting := .F.
-						If lClasImpNfce
-							//Se retorno for falso, não houve impressão em contingencia
-							lImpConting := oLojINfce:ImpMsgCon(lContigen, @cTexto, @nRetImp)
-						EndIf
-							
-						If !lImpConting
-							LJGrvLog(Nil, "Envia o texto para a impressao intermediaria (STWPrintTextNotFiscal)")
-							nRetImp := STWPrintTextNotFiscal(cTexto)
-							LJGrvLog(Nil, "Retorno do texto para a impressao intermediaria (STWPrintTextNotFiscal)",nRetImp)
-						EndIf
+						LJGrvLog(Nil, "Envia o texto para a impressao intermediaria (STWPrintTextNotFiscal)")
+						nRetImp := STWPrintTextNotFiscal(cTexto)
 					EndIf
-					cTexto	:= ""
+					cTexto		:= ""
 				EndIf
 				nContItImp	:= 0
 			EndIf
@@ -1213,9 +1147,9 @@ BEGIN SEQUENCE
 		//--------------------------------------------
 		//se existir ISSQN, o VALOR TOTAL é igual a soma da tag vProd + vServ
 		If LjRTemNode(aTotal,"_ISSQNTOT")
-			nVlrTotal := Val(aTotal:_ICMSTOT:_VPROD:TEXT) + Val(aTotal:_ISSQNTot:_VSERV:TEXT)  - nTotDeson
+			nVlrTotal := Val(aTotal:_ICMSTOT:_VPROD:TEXT) + Val(aTotal:_ISSQNTot:_VSERV:TEXT)
 		Else
-			nVlrTotal := Val(aTotal:_ICMSTOT:_VPROD:TEXT) - nTotDeson
+			nVlrTotal := Val(aTotal:_ICMSTOT:_VPROD:TEXT)
 		EndIf		
 
 		cTextoAux 	:= "VALOR TOTAL R$"		
@@ -1361,19 +1295,11 @@ BEGIN SEQUENCE
 		cTextoAux += PadL( Month(aDtHrLocal[1]),2,"0" ) + "/"	//MM
 		cTextoAux += cValToChar( Year(aDtHrLocal[1]) ) + " "	//AAAA
 		cTextoAux += aDtHrLocal[2]								//hh:mm:ssa
-		
+
 		cTexto += (TAG_CENTER_INI + TAG_NEGRITO_INI + cTagCondIni)
 		cTexto += cTextoAux
 		cTexto += (cTagCondFim + TAG_NEGRITO_FIM + TAG_CENTER_FIM)
 		cTexto += cCRLF
-		
-		If lClasImpNfce
-			oLojINfce:RetMsgCon(lContigen)
-			
-			If !Empty(AllTrim(oLojINfce:cMsgConting))
-				cTexto += oLojINfce:cMsgConting
-			EndIf
-		EndIf
 
 		// obtemos o Protocolo de Autorizacao do XML retornado do SEFAZ (se modalidade NORMAL)
 		If !lContigen
@@ -1426,19 +1352,6 @@ BEGIN SEQUENCE
 			cTexto += cCRLF
 		EndIf
 
-		// Mensagem para a Nota Fiscal Premiada MS
-		If !Empty(cXMLProt)
-			aMsgNfPre := StrToKArr(cXMLPROT,"|")
-			If Len(aMsgNfPre) > 2 .And. "DEZENAS" $ Upper(aMsgNfPre[2])
-				cTexto += TAG_CENTER_INI + cTagCondIni
-				cTexto += "NOTA MS PREMIADA" + cCRLF
-				cTexto += aMsgNfPre[2] + cCRLF
-				CtEXTO += SubStr(aMsgNfPre[3],1, AT("<",aMsgNfPre[3]) -1 )
-				cTexto += cTagCondFim + TAG_CENTER_FIM
-				cTexto += cCRLF
-			EndIf
-		EndIf
-
 		//Se Ambiente for Homologacao		
 		If cAmbiente == "2"
 			cTexto += cCRLF
@@ -1446,7 +1359,7 @@ BEGIN SEQUENCE
 			cTexto += Replicate(cCRLF,2)
 		EndIf
 
-		If lContigen
+		If lContigen			
 			cTexto += cCRLF
 			cTexto += (TAG_CENTER_INI + TAG_NEGRITO_INI + "EMITIDA EM CONTINGÊNCIA" + TAG_NEGRITO_FIM + TAG_CENTER_FIM)
 			cTexto += cCRLF
@@ -1498,8 +1411,7 @@ BEGIN SEQUENCE
 			U_LOJRNFCe(	oNFCe		, oProt		, nDecimais	, aFormas	,;
 						cProtAuto	, lContigen	, cDtHoraAut, aEmitNfce	,; 
 						aDestNfce	, aIdNfce	, aPagNfce	, aItemNfce	,; 
-						aTotal		, cChvNFCe	, Nil       , aItensNFCe,;
-						cXMLProt )
+						aTotal		, cChvNFCe	)
 			nRetImp := 0 
 		Else //Imprime Não Fiscal
 			
@@ -1515,44 +1427,28 @@ BEGIN SEQUENCE
 				
 				If lPos
 					LJGrvLog(Nil, "Envia o texto para a impressao final (STWPrintTextNotFiscal)")
-					
-					lImpConting := .F.
-					If lClasImpNfce
-						//Se retorno for falso, não houve impressão em contingencia
-						lImpConting := oLojINfce:ImpMsgCon(lContigen, @cTexto, @nRetImp)
-					EndIf
-							
-					If !lImpConting
-						nRetImp := STWPrintTextNotFiscal(cTexto)
-					EndIf
-					
-					LJGrvLog(Nil, "Retorno do envio do texto para a impressao final (STWPrintTextNotFiscal)")
+					nRetImp := STWPrintTextNotFiscal(cTexto)
 				Else
-					//Tratamento paliativo para impressora Bematech, ate a solucao de problema de comunicacao ppor parte da BEMATECH
-					nRetImp := 999
-					lSaiImp := .F.
-					
-					While nRetImp <> 0 .And. !lSaiImp .And. LjAskImp(nRetImp)
-						LJGrvLog(Nil, "Envia o texto para a impressao final (INFTexto)")
+					If ExistFunc("LjAskImp")
+						//Tratamento paliativo para impressora Bematech, ate a solucao de problema de comunicacao ppor parte da BEMATECH
+						nRetImp := 999
+						lSaiImp := .F.
 						
-						lImpConting := .F.
-						If lClasImpNfce
-							//Se retorno for falso, não houve impressão em contingencia
-							lImpConting := oLojINfce:ImpMsgCon(lContigen, @cTexto, @nRetImp)
-						EndIf
-							
-						If !lImpConting
+						While nRetImp <> 0 .And. !lSaiImp .And. LjAskImp(nRetImp)
+							LJGrvLog(Nil, "Envia o texto para a impressao final (INFTexto)")
 							nRetImp := INFTexto(cTexto)  //Envia comando para a Impressora
-						EndIf
-													
-						If nMVNFCEIMP == 1 .And. nRetImp <> 0 .And. !MsgYesNo("Houve erro na impressão, deseja tentar imprimir novamente ?", "Atenção")
-							lSaiImp := .T.
-							LjGrvLog( Nil,	" Impressão da NFC-e está como não obrigatório [MV_NFCEIMP igual a 1], " +; 
-											" houve erro na impressão do comprovante e usuário optou por sair sem imprimir  ")
-						EndIf
-						
-						LJGrvLog(Nil, "Retorno do envio do texto para a impressao final (INFTexto)")
-					End
+							
+														
+							If nMVNFCEIMP == 1 .And. nRetImp <> 0 .And. !MsgYesNo("Houve erro na impressão, deseja tentar imprimir novamente ?", "Atenção")
+								lSaiImp := .T.
+								LjGrvLog( Nil,	" Impressão da NFC-e está como não obrigatório [MV_NFCEIMP igual a 1], " +; 
+												" houve erro na impressão do comprovante e usuário optou por sair sem imprimir  ")
+							EndIf
+						End
+					Else
+						LJGrvLog(Nil, "Envia o texto para a impressao final (INFTexto)")
+						nRetImp := INFTexto(cTexto)	//Envia comando para a Impressora
+					EndIf
 				EndIf
 			EndIf
 		EndIf
@@ -1595,15 +1491,7 @@ lRet := (XmlChildEx(oObjeto,cNode) <> NIL)
 
 Return lRet
 
-//--------------------------------------------------------
-/*{Protheus.doc} LjUTCtoLoc
 
-@author  Varejo
-@version P11.8
-@since   02/02/2016
-@return	 aRet, array,  
-*/
-//--------------------------------------------------------
 Static Function LjUTCtoLoc(cDataUTC)
 
 Local dData			:= Nil
@@ -2013,4 +1901,3 @@ If lContinua
 EndIf
 
 Return .T.
-

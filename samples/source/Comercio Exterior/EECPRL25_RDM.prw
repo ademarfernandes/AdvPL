@@ -75,7 +75,7 @@ Begin Sequence
    cSEQREL :=GetSXENum("SY0","Y0_SEQREL")
    CONFIRMSX8()
 
-   cNomDbfC := "REL25C"
+   cNomDbfC := "PRL25C"
 
    aCamposC := {{"SEQREL  ","C",008,0},;
                 {"AGRUP"   ,"C",050,0},;
@@ -90,7 +90,7 @@ Begin Sequence
                 {"ADIAN"   ,"C",005,0},;
                 {"PAGOPOR" ,"C",050,0}}
 
-   cNomDbfD := "REL25D"
+   cNomDbfD := "PRL25D"
 
    aCamposD := {{"SEQREL  ","C", 08,0},;
                 {"PROCESSO","C", AvSx3("EET_PEDIDO",AV_TAMANHO),0},;
@@ -113,7 +113,7 @@ Begin Sequence
    aArqs := {}
    aAdd(aArqs,{cNomDbfC,aCamposC,"CAB","SEQREL"})
    aAdd(aArqs,{cNomDbfD,aCamposD,"DET","SEQREL"})
-   aRetCrw := CrwNewFile(aARQS)
+   aRetCrw := CrwNewFilee(aARQS)
 
    If !TelaGets()
       lRet := .f.
@@ -386,8 +386,8 @@ Begin Sequence
          cSelect += ", "+RetSqlName("EEC") + " EEC "
       EndIf
 
-      cWhere :=  "Where EET.D_E_L_E_T_ <> '*' " + Iif( cFase == "P", "And EE7.D_E_L_E_T_ <> '*'" , "And EEC.D_E_L_E_T_ <> '*'" ) +  " And EET_FILIAL = '"+xFilial("EET")+"' And " +;
-                  Iif( cFase == "P", "EE7_FILIAL = '" + xFilial("EE7") , "EEC_FILIAL = '" + xFilial("EEC") ) + "'" 
+      cWhere :=  "Where EET.D_E_L_E_T_ <> '*' And EEC.D_E_L_E_T_ <> '*' And EET_FILIAL = '"+xFilial("EET")+"' And " +;
+                  "EEC_FILIAL = '" + xFilial("EEC") + "'"
 
       If cFase == "P" //Pedido
          cWhere += " And EET.EET_PEDIDO = EE7.EE7_PEDIDO"

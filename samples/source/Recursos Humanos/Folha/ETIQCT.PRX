@@ -3,9 +3,7 @@
 #INCLUDE "ETIQCT.CH"
 
 User Function Etiqct()        // incluido pelo assistente de conversao do AP5 IDE em 05/07/00
-Local aOfusca		:= If(FindFunction('ChkOfusca'), ChkOfusca(), { .T., .F., {"",""} }) //[1]Acesso; [2]Ofusca; [3]Mensagem
-Local aFldRel		:= {"RA_SALARIO", "RA_ADMISSA", "RA_REGISTR", "RA_FICHA", "RA_NUMCP", "RA_SERCP", "RA_DEMISSA"}
-Local lBlqAcesso	:= aOfusca[2] .And. !Empty( FwProtectedDataUtil():UsrNoAccessFieldsInList( aFldRel ) )
+
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 //³ Declaracao de variaveis utilizadas no programa atraves da funcao    ³
 //³ SetPrvt, que criara somente as variaveis definidas pelo usuario,    ³
@@ -49,9 +47,9 @@ SetPrvt("NCONT")
 ±±³Emerson     ³06/01/03³------³Buscar o codigo CBO no cadastro de funcoes³±±
 ±±³            ³        ³------³de acordo com os novos codigos CBO/2002.  ³±±
 ±±³Equipe RH   ³08/09/05³078027³Ajustar a impressao da expressao "Por Mes"³±±
-±±³            ³08/03/06³------³e "Por hora" para Estagiarios Mens/Horista³±±
+±±³            ³08/03/06³------³e "Por hora" para Estagiarios Mens/Horista³±± 
 ±±³Luciana     ³06/07/09³016765³Ajuste na string (CH) para exibir "CNPJ"  ³±±
-±±³            ³        ³ /2009³ao inves de "CGC".                        ³±±
+±±³            ³        ³ /2009³ao inves de "CGC".                        ³±± 
 ±±³Alex        ³19/08/09³020747³Ajuste no Grupo de Campos filial          ³±±
 ±±³            ³        ³ /2009³tratamento para não considerar 2 posições ³±±
 ±±³            ³        ³      ³fixas.                                    ³±±
@@ -96,13 +94,6 @@ wCabec2  := ""
 Contfl   := 1
 Li       := 0
 nTamanho := "M"
-
-//Tratamento de acesso a Dados Sensíveis
-If lBlqAcesso
-	//"Dados Protegidos- Acesso Restrito: Este usuário não possui permissão de acesso aos dados dessa rotina. Saiba mais em {link documentação centralizadora}"
-	Help(" ",1,aOfusca[3,1],,aOfusca[3,2],1,0)
-	Return
-EndIf
 
 /*
 ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -174,7 +165,7 @@ nLC     := 189
 nLN     := 105
 nPula   := 1
 
-aVetor:={}
+aVetor:={}  
 nAlin :=0
 aInfo :={}
 
@@ -259,7 +250,7 @@ While !Eof() .And. Chave == 0
 		cFil:=SRA->RA_FILIAL
 	Endif
 
-	While !Eof() .And. SRA->RA_FILIAL == cFil
+	While !Eof() .And. SRA->RA_FILIAL == cFil 
 
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³ Movimenta Regua Processamento                                ³
@@ -293,7 +284,7 @@ While !Eof() .And. Chave == 0
 			Chave := 1
 			Exit
 		EndIF
-
+	
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³ Consiste Parametriza‡Æo do Intervalo de ImpressÆo            ³
 		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
@@ -303,17 +294,17 @@ While !Eof() .And. Chave == 0
 			dbSkip(1)
 			Loop
 		EndIf
-
-		/*
+		
+    	/*
 		ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		³Consiste Filiais e Acessos                                             ³
 		ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ*/
 		IF !( SRA->RA_FILIAL $ fValidFil() .and. Eval( cAcessaSRA ) )
 			dbSelectArea("SRA")
-			dbSkip()
-			Loop
+      		dbSkip()
+       		Loop
 		EndIF
-
+			
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³ Verifica Situacao e Categoria do Funcionario                 ³
 		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
@@ -321,7 +312,7 @@ While !Eof() .And. Chave == 0
 			dbSkip()
 			Loop
 		Endif
-
+	
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³ Verifica Sindicatos - 99 Todos                               ³
 		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
@@ -333,7 +324,7 @@ While !Eof() .And. Chave == 0
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³ Verifica se for Tipo Saida - Imprime apenas demitidos        ³
 		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-		If nTipImp==2
+		If nTipImp==2	
 			If SRA->RA_SITFOLH#"D" .And. (SRA->RA_DEMISSA < dDtDe .Or. SRA->RA_DEMISSA > dDtAte)
 				dbSkip()
 				Loop
@@ -352,13 +343,13 @@ While !Eof() .And. Chave == 0
 			If SRA->RA_CATFUNC$"M*C*E"
 				cTipPagto	:= 	STR0010			//-- Mensalista ( Mensalista/Comissionado/Estagiario mensalista)
 			ElseIf SRA->RA_CATFUNC=="S"
-				cTipPagto	:= 	STR0028			//-- Semanalista
+				cTipPagto	:= 	STR0028			//-- Semanalista  
 			ElseIf SRA->RA_CATFUNC$"H*G"
 				cTipPagto	:= 	STR0011 		//-- Horista      ( Horista/Estagiario horista)
 			ElseIf 	SRA->RA_CATFUNC=="D"
-				cTipPagto	:= 	STR0012   		//-- Diarista
+				cTipPagto	:= 	STR0012   		//-- Diarista 
 			Else
-				cTipPagto	:= 	If(SRA->RA_TIPOPGT="M",STR0010,STR0028) 			//-- Mensalista  * Semanlista
+				cTipPagto	:= 	If(SRA->RA_TIPOPGT="M",STR0010,STR0028) 			//-- Mensalista  * Semanlista 
 			Endif
 			//-- cTipPagto := If(SRA->RA_CATFUNC$"M*C*E",STR0010,If(SRA->RA_CATFUNC="H*G",STR0011,STR0012))	//" POR MES"###" POR HRS"###" POR DIA"
 
@@ -380,7 +371,7 @@ While !Eof() .And. Chave == 0
 			Endif
 
 			//
-
+			
 			aVetor[nAlin,1]:= aInfo[3]
 			aVetor[nAlin,2]:= aInfo[4]
 			aVetor[nAlin,3]:= AllTrim(aInfo[5]) + " - " + aInfo[6] + Iif(cPaisLoc =="BRA",STR0014 + cCgc,"")		//"  CGC "
@@ -391,7 +382,8 @@ While !Eof() .And. Chave == 0
 			aVetor[nAlin,8]:= STR0020+SRA->RA_REGISTR + STR0021 + SRA->RA_FICHA										//"Registro No. "###" Fls./Ficha "
 			aVetor[nAlin,9]:= STR0022+ALLTRIM(TRANSFORM(SRA->RA_SALARIO,"@E 999,999,999.99"))+" "+aLinha[1]	//Remuneracao R$ ou Bs
 			aVetor[nAlin,10]:= aLinha[2]
-			aVetor[nAlin,11]:= " "
+			aVetor[nAlin,11]:= AllTrim( PadR(aLinha[3],40) )+" "+SRA->RA_FILIAL+"-"+SRA->RA_MAT
+			aVetor[nAlin,12]:= " "
 		Else
 			aVetor[nAlin,1]:= STR0023+SRA->RA_FILIAL+"  "+STR0024+SRA->RA_MAT+"  "+STR0025+AllTrim(SRA->RA_NUMCP)+"/"+SRA->RA_SERCP	//"FIL.: "###"MATRIC: "###"CART.PROF: "
 			aVetor[nAlin,2]:= STR0026+SUBSTR(DTOC(SRA->RA_DEMISSA),1,2)+STR0027+MesExtenso(MONTH(SRA->RA_DEMISSA))+STR0027+STR(YEAR(SRA->RA_DEMISSA),4)	//"Data Saida "###" de "###" de "
@@ -447,10 +439,10 @@ If (cTipo == "I" .And. nAlin == nColunas) .Or. (cTipo == "F" .And. nAlin > 0)
 	nCont:=If(nTipImp==1,12,6) // Verifica Etiq de Entrada/Saida
 	For C:= 1 To nCont
 		nCol:=0
-		For I:= 1 To nColunas
-			@ Li,nCol PSAY substr(aVetor[I,C],1,56)
-			nCol := nCol + 56
-			aVetor[I,C]:= " "
+		For I:= 1 To nColunas       
+			 @ Li,nCol PSAY substr(aVetor[I,C],1,56)
+			 nCol := nCol + 56
+			 aVetor[I,C]:= " "
 		Next
 		Li := Li + 1
 		If Li >= 60
@@ -458,12 +450,13 @@ If (cTipo == "I" .And. nAlin == nColunas) .Or. (cTipo == "F" .And. nAlin > 0)
 		Endif
 	Next
 
-	nAlin:=0
+	nAlin:=0              
 
 Endif
 
 If cTipo == "F"
 	@ Li, 0 PSAY " "
-Endif
+Endif	
 
 Return(nil)        // incluido pelo assistente de conversao do AP5 IDE em 05/07/00
+

@@ -129,7 +129,7 @@ Begin Sequence
    AADD(aARQS,{cNOMDBFC,aCAMPOSC,"CAB","SEQREL"})
    AADD(aARQS,{cNOMDBFD,aCAMPOSD,"DET","SEQREL"})
 
-   aRetCrw := CrwNewFile(aARQS)
+   aRetCrw := CrwNewFilee(aARQS)
 
    IF nRadio = 2 .Or. nRadio = 3 // A Vencer - Previsão de Emb. ou Ambos
       cAlias := "QRY2"
@@ -159,26 +159,22 @@ Begin Sequence
       lRet := .f.
    ENDIF
 
-   
+   IF Empty(cFile)
+      QRY->(dbCloseArea())
+   Else
+      QRY->(E_EraseArq(cFile))
+   Endif
 
    IF ( lRet )
-      lRetC := CrwPreview(aRetCrw,cArqRpt,cTitRpt,cSeqRel)     
+      lRetC := CrwPreview(aRetCrw,cArqRpt,cTitRpt,cSeqRel)
+   ELSE
+      // Fecha e apaga os arquivos temporarios
+      CrwCloseFile(aRetCrw,.T.)
    ENDIF
 
    IF Select("Work_Men") > 0
       Work_Men->(E_EraseArq(cWork))
    Endif
-   
-   IF Select("QRY") > 0
-      QRY->(dbCloseArea())   
-   Endif
-   
-   IF Select("QRY2") > 0
-      QRY2->(dbCloseArea())   
-   Endif   
-   
-   // Fecha e apaga os arquivos temporarios
-   CrwCloseFile(aRetCrw,.T.)
 
 End Sequence
 

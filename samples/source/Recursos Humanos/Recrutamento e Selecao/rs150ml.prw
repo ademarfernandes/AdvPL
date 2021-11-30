@@ -1,4 +1,3 @@
-#Include 'PROTHEUS.ch'
 /*ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
@@ -51,13 +50,14 @@ For ny := 1 To nTamGetD //Numero de Candidatos
 	
 	IncProc()
 
+	TRX->(dbGoto(ny))
 
 	dbSelectArea("SQG")
 	dbSetOrder(1)
-	dbSeek(aSvGetd[ny][1])
+	dbSeek(xFilial("SQG")+TRX->TRX_CURRIC)
 	cEmail	:= SQG->QG_EMAIL
 		
-	If (nQual == 6 .Or. nQual == 7)
+	If (nQual == 6 .Or. nQual == 7) .And. !TRX->TRX_CHECK
 		Loop
 	EndIf
 	
@@ -73,7 +73,7 @@ For ny := 1 To nTamGetD //Numero de Candidatos
 		cMensagem += 'borderColorDark=v bgColor="#0099cc" height="1">'
 		cMensagem += '<p align="center"><FONT face="Arial" color="#ffffff" size="4">'
 		cMensagem += '<b>'+OemToAnsi(cAssunto)+'</b></font></p></td></tr>'
-		cMensagem += '<tr><td align="left" width="606" height="32"><b><FONT face="Arial" color="#0099cc" size="2">Candidato:&nbsp;</FONT></b><FONT face="Arial" color="#666666" size="2">' + SQG->QG_NOME + '</FONT><br></td>'
+		cMensagem += '<tr><td align="left" width="606" height="32"><b><FONT face="Arial" color="#0099cc" size="2">Candidato:&nbsp;</FONT></b><FONT face="Arial" color="#666666" size="2">' + TRX->TRX_NOME + '</FONT><br></td>'
 	   
 		cMensagem += '<tr><td>'
 		cMensagem += '<table width="100%"  border="1" cellspacing="2" cellpadding="2">'
@@ -97,7 +97,7 @@ For ny := 1 To nTamGetD //Numero de Candidatos
     
 	MsgRun( OemToAnsi("Aguarde. Enviando Email..."),"",;
 			{||nErro := Rh_Email(cEmail,,cAssunto,cMensagem)})
-	RH_ErroMail(nErro,SQG->QG_NOME )
+	RH_ErroMail(nErro,TRX->TRX_NOME)
 	
 Next ny
 

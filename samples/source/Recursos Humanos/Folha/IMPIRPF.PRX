@@ -117,7 +117,6 @@ cTelef  	:= aInfo[10]
 cDesCep 	:= ainfo[7]                  
 lMeuRH		:= PARAMIXB[1]
 cAnoBas		:= PARAMIXB[2]
-cArqName	:= PARAMIXB[3]
 
 cDescOred	:= If(empty(cDescOred),space(50),Left(cDescOred+space(50),50))
 
@@ -131,7 +130,7 @@ Else
 	If !lMeuRH	
 		cHtml := fIrpfHtml( lPulaHtml )
 	Else
-		fIrpfNewGraf(lMeuRH, cAnoBas, cArqName)
+		fIrpfNewGraf(lMeuRH, cAnoBas)
 		cHtml := ""
 	EndIf
 Endif		
@@ -167,10 +166,10 @@ cB := "|"
 SET DEVICE TO PRINT
 @ 00,00 PSAY AvalImp( Colunas ) 
 @ 01,00 PSAY " " + Replicate(cL,78) + " "
-@ 02,00 PSAY STR0001	//"|            MINISTERIO DA ECONOMIA           |COMPROVANTE DE RENDIMENTOS PAGOS|"
-@ 03,00 PSAY STR0002	//"|SECRETARIA ESPECIAL DA RECEITA FEDERAL DO BRASIL|       E DE RETENÇÃO DE         |"
-@ 04,00 PSAY STR0003	//"|    IMPOSTO SOBRE A RENDA DA PESSOA FISICA   |   IMPOSTO DE RENDA NA FONTE    |"
-@ 05,00 PSAY STR0092+Soma1(mv_par08)+")"+SPACE(18)+cB+STR0093+mv_par08+")"+SPACE(1)+cB //"|         (EXERCICIO DE - " ##"      (ANO CALENDÁRIO - "
+@ 02,00 PSAY STR0001	//"|         MINISTERIO DA FAZENDA         |   COMPROVANTE DE RENDIMENTOS PAGOS   |"
+@ 03,00 PSAY STR0002	//"|     SECRETARIA DA RECEITA FEDERAL     |          E DE RETENÇÃO DE            |"
+@ 04,00 PSAY STR0003	//"| IMPOSTO SOBRE A RENDA DA PESSOA FISICA|      IMPOSTO DE RENDA NA FONTE       |"
+@ 05,00 PSAY STR0092+Soma1(mv_par08)+")"+SPACE(9)+cB+STR0093+mv_par08+")"+SPACE(9)+cB //"|         (EXERCICIO DE - " ##"      (ANO CALENDÁRIO - "
 @ 06,00 PSAY " " + Replicate(cl,78) + " "
 
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -368,10 +367,10 @@ SET DEVICE TO SCREEN
 
 LAY-OUT MODELO
  ------------------------------------------------------------------------------ 
-|         MINISTERIO DA ECONOMIA                 |COMPROVANTE DE RENDIMENTOS   |
-|                                       	     | PAGOS E DE IMPOSTO SOBRE    |
-|SECRETARIA ESPECIAL DA RECEITA FEDERAL DO BRASIL| A RENDA RETIDO NA FONTE     |
-|                                                |   (ANO CALENDARIO - 9999)   |
+|         MINISTERIO DA FAZENDA         |   COMPROVANTE DE RENDIMENTOS PAGOS   |
+|                                       |          E DE RETENCAO DE            |
+|     SECRETARIA DA RECEITA FEDERAL     |      IMPOSTO DE RENDA NA FONTE       |
+|                                       |      (ANO CALENDARIO - 9999)         |
  ------------------------------------------------------------------------------ 
   1. - Fonte Pagadora Pessoa Juridica ou Pessoa Fisica    
  ------------------------------------------------------------------------------ 
@@ -1427,10 +1426,10 @@ If File(cFileFaz)
 	oPrint:SayBitmap(nLinI+10,050, cFileFaz,235,195) // Tem que estar abaixo do RootPath
 Endif
 nLin +=20
-oPrint:say(nLin,500 ,STR0036,oFont13n)				//	Ministerio da Economia 
+oPrint:say(nLin,500 ,STR0036,oFont13n)				//	ministerio da fazenda 
 oPrint:Say(nLin,1500,STR0038,oFont10)				//Comprovante de rendimento
 nLin +=50
-oPrint:say(nLin+10,500 ,STR0037,oFont10)			//Secretaria Especial da Receita Federal do Brasil
+oPrint:say(nLin+10,500 ,STR0037,oFont10)			//secretaria de receita
 oPrint:Say(nLin,1500,STR0039,oFont10)              //Retencao de rendimentos
 nLin +=50
 oPrint:Say(nLin,500,STR0094,oFont10n) 				//"IMPOSTO SOBRE A RENDA DA PESSOA FÍSICA"
@@ -1451,7 +1450,7 @@ Função responsável por imprimir o informe de rendimentos em PDF no MeuRH
 @author:	Marcelo Silveira
 @since:		29/01/2019
 /*/
-Static Function  fIrpfNewGraf( lMeuRH, cAnoBas, cArqName )
+Static Function  fIrpfNewGraf( lMeuRH, cAnoBas )
 
 Local N 		:= 0     
 Local lExigi	:= .F.
@@ -1466,9 +1465,10 @@ Local nTotInf	:= 0
 Local cLocal	:= GetSrvProfString ("STARTPATH","")
 Local cFilePrint:= ""
 Local cPath		:= ""
-Local cFile		:= cArqName  
+Local cFile		:= ""  
 Local nFlags   	:= PD_ISTOTVSPRINTER + PD_DISABLEORIENTATION
 
+cFile	:= AllTrim(SRL->RL_FILIAL) +"_"+ AllTrim(SRL->RL_MAT)
 oPrint 	:= FWMSPrinter():New(cFile+".rel", IMP_PDF, .F., cLocal, .T., , , , .T., , .F., )
 nMaxV 	:= 3168
 oPrint:SetPortrait()
@@ -1906,10 +1906,10 @@ If File(cFileFaz)
 	oPrint:SayBitmap(nLinI+4,25, cFileFaz,60,50) 	// Tem que estar abaixo do RootPath
 Endif
 nLin +=10
-oPrint:say(nLin,110 ,STR0036,oFont13n)					//Ministerio da ECONOMIA 
+oPrint:say(nLin,110 ,STR0036,oFont13n)					//Ministerio da fazenda 
 oPrint:Say(nLin,360,STR0038,oFont10)					//Comprovante de rendimento
 nLin +=10
-oPrint:say(nLin,110 ,STR0037,oFont10)					//SECRETARIA ESPECIAL DA RECEITA FEDERAL DO BRASIL
+oPrint:say(nLin,110 ,STR0037,oFont10)					//secretaria de receita
 oPrint:Say(nLin,360,STR0039,oFont10)         			//Retencao de rendimentos
 nLin +=10
 oPrint:Say(nLin,110,STR0094,oFont10n) 					//"IMPOSTO SOBRE A RENDA DA PESSOA FÍSICA"
