@@ -1,2 +1,2 @@
 # AdvPL
-Fontes desenvolvidos em AdvPL
+Fontes padrões do Ptoheus desenvolvidos em AdvPL.
